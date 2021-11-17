@@ -31,7 +31,7 @@ All the below supported NETCONF operations depends on a `MountPoint` session to 
 - `Lock`
 - `Unlock`
 
-See the [examples]() folder to understand how to use the CRD. Also, read the CRD spec to understand the requirements.
+See the [examples](https://github.com/adetalhouet/netconf-operator/tree/main/examples) folder to understand how to use the CRD. Also, read the CRD spec to understand the requirements.
 
 The `Lock` CRD removes the lock on the datastore when deleted; so removal of a `Lock` CR acts like as an unlock.
 
@@ -40,6 +40,10 @@ Finally, in order to sequence operations, the `EditConfig`, `Commit`, and `Unloc
 ## Notification Usage
 
 The `Notification` CRD enables the creation of `create-subscription` and `establish-subscription` RPC. One `Notification` CR can provide multiple instead of each, enabling an easy way to setup telemetry. All the received notifications are translated to a Kubernetes Event, providing the received XML for further analysis.
+
+Here is an example, based on [this CR:](https://github.com/adetalhouet/netconf-operator/blob/main/examples/notifications/create-subscriptions.yaml)
+
+![](https://raw.githubusercontent.com/adetalhouet/netconf-operator/main/docs/netconf-notification-example.png)
 
 ## TODO
 - enable `commit` through `edit-config` directly
