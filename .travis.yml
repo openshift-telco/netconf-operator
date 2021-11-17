@@ -9,7 +9,6 @@ matrix:
   allow_failures:
     - go: tip
 
-before_install: make generate
 
 install: make build
 
