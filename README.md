@@ -17,7 +17,9 @@ This operator provides support for:
 - Partially [RFC8641](https://datatracker.ietf.org/doc/html/rfc8641) and [RFC8639](https://datatracker.ietf.org/doc/html/rfc8639): **Subscription to YANG Notifications for Datastore Updates**
     - Support for `establish-subscription`
     - No support for `delete-subscription`
-It is build using the following [go-netconf](https://github.com/adetalhouet/go-netconf) implementation.
+
+
+The operator is built using the following [go-netconf](https://github.com/adetalhouet/go-netconf) client.
 
 ## RPC Usage
 
