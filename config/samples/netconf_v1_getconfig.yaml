@@ -1,0 +1,7 @@
+apiVersion: netconf.adetalhouet.io/v1
+kind: GetConfig
+metadata:
+  name: getconfig-sample
+spec:
+  # Add fields here
+  foo: bar

@@ -1,0 +1,7 @@
+apiVersion: netconf.adetalhouet.io/v1
+kind: EstablishSubscription
+metadata:
+  name: establishsubscription-sample
+spec:
+  # Add fields here
+  foo: bar

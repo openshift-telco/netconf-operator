@@ -1,0 +1,7 @@
+apiVersion: netconf.adetalhouet.io/v1
+kind: Commit
+metadata:
+  name: commit-sample
+spec:
+  # Add fields here
+  foo: bar

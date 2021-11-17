@@ -1,0 +1,10 @@
+apiVersion: netconf.adetalhouet.io/v1
+kind: MountPoint
+metadata:
+  name: csr1kv-mountpoint
+  namespace: default
+spec:
+  target: 10.64.1.54:32035
+  username: lab
+  password: lab
+  timeout: 15

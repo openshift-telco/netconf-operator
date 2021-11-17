@@ -1,0 +1,22 @@
+language: go
+
+go:
+  - "1.16"
+  - tip
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - go: tip
+
+before_install: make generate
+
+install: make build
+
+script:
+  - make test                 # Run all the tests with the race detector enabled
+  - go vet controllers/*.go   # go vet is the official Go static analyzer
+  - golint controllers/*.go   # one last linter
+
+before_script:
+  - go get -u golang.org/x/lint/golint     # Linter

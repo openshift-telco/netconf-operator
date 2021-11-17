@@ -1,0 +1,20 @@
+# permissions for end users to view mountpoints.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: mountpoint-viewer-role
+rules:
+- apiGroups:
+  - netconf.adetalhouet.io
+  resources:
+  - mountpoints
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - netconf.adetalhouet.io
+  resources:
+  - mountpoints/status
+  verbs:
+  - get

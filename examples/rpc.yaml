@@ -1,0 +1,12 @@
+apiVersion: netconf.adetalhouet.io/v1
+kind: RPC
+metadata:
+  name: raw-get-config-rpc
+spec:
+  mountpoint: csr1kv-mountpoint
+  xml: |-
+        <get-config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+            <source>
+                <running/>
+            </source> 
+        </get-config>

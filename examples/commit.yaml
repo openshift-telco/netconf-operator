@@ -1,0 +1,7 @@
+apiVersion: netconf.adetalhouet.io/v1
+kind: Commit
+metadata:
+  name: commit
+  namespace: default
+spec:
+  mountPoint: csr1kv-mountpoint

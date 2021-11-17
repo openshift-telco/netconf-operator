@@ -1,0 +1,24 @@
+# permissions for end users to edit rpcs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rpc-editor-role
+rules:
+- apiGroups:
+  - netconf.adetalhouet.io
+  resources:
+  - rpcs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - netconf.adetalhouet.io
+  resources:
+  - rpcs/status
+  verbs:
+  - get

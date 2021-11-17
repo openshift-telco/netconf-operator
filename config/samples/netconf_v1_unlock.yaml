@@ -1,0 +1,7 @@
+apiVersion: netconf.adetalhouet.io/v1
+kind: Unlock
+metadata:
+  name: unlock-sample
+spec:
+  # Add fields here
+  foo: bar

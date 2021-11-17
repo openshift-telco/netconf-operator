@@ -1,0 +1,20 @@
+# permissions for end users to view establishsubscriptions.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: establishsubscription-viewer-role
+rules:
+- apiGroups:
+  - netconf.adetalhouet.io
+  resources:
+  - establishsubscriptions
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - netconf.adetalhouet.io
+  resources:
+  - establishsubscriptions/status
+  verbs:
+  - get

@@ -1,0 +1,10 @@
+apiVersion: netconf.adetalhouet.io/v1
+kind: Get
+metadata:
+  name: get
+spec:
+  mountPoint: csr1kv-mountpoint
+  filterType: subtree
+  xml: |-
+        <routing xmlns="urn:ietf:params:xml:ns:yang:ietf-routing">
+        </routing>

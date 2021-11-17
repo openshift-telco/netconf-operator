@@ -1,0 +1,110 @@
+domain: adetalhouet.io
+layout:
+- go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+  sdk.x-openshift.io/v1: {}
+projectName: netconf-operator
+repo: github.com/adetalhouet/netconf-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: adetalhouet.io
+  group: netconf
+  kind: Mountpoint
+  path: github.com/adetalhouet/netconf-operator/api/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: adetalhouet.io
+  group: netconf
+  kind: Commit
+  path: github.com/adetalhouet/netconf-operator/api/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: adetalhouet.io
+  group: netconf
+  kind: EditConfig
+  path: github.com/adetalhouet/netconf-operator/api/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: adetalhouet.io
+  group: netconf
+  kind: GetConfig
+  path: github.com/adetalhouet/netconf-operator/api/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: adetalhouet.io
+  group: netconf
+  kind: Get
+  path: github.com/adetalhouet/netconf-operator/api/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: adetalhouet.io
+  group: netconf
+  kind: Lock
+  path: github.com/adetalhouet/netconf-operator/api/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: adetalhouet.io
+  group: netconf
+  kind: Unlock
+  path: github.com/adetalhouet/netconf-operator/api/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: adetalhouet.io
+  group: netconf
+  kind: RPC
+  path: github.com/adetalhouet/netconf-operator/api/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: adetalhouet.io
+  group: netconf
+  kind: EstablishSubscription
+  path: github.com/adetalhouet/netconf-operator/api/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: adetalhouet.io
+  group: netconf
+  kind: CreateSubscription
+  path: github.com/adetalhouet/netconf-operator/api/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: adetalhouet.io
+  group: netconf
+  kind: Notification
+  path: github.com/adetalhouet/netconf-operator/api/v1
+  version: v1
+version: "3"
