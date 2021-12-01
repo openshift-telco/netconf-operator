@@ -63,7 +63,8 @@ it is depending on, using the `dependsOn` field. As such, one can achieve such f
 
 By registering to a notification stream, the operator received the `notification` and translate it to a Kubernetes
 event. This enables the consumption of the events by downstream systems for further processing.
-![](https://raw.githubusercontent.com/adetalhouet/netconf-operator/main/docs/netconf-notification-example.png)
+
+![](https://raw.githubusercontent.com/openshift-telco/netconf-operator/main/docs/netconf-notification-example.png)
 
 ##### Create subscription
 
