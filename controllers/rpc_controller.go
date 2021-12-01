@@ -19,8 +19,8 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/openshift-telco/go-netconf-client/netconf/message"
 	"github.com/go-logr/logr"
+	"github.com/openshift-telco/go-netconf-client/netconf/message"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
