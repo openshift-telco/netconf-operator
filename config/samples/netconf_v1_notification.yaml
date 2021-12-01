@@ -1,7 +1,0 @@
-apiVersion: netconf.adetalhouet.io/v1
-kind: Notification
-metadata:
-  name: notification-sample
-spec:
-  # Add fields here
-  foo: bar

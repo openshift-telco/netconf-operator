@@ -5,7 +5,7 @@ metadata:
   name: get-viewer-role
 rules:
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - gets
   verbs:
@@ -13,7 +13,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - gets/status
   verbs:

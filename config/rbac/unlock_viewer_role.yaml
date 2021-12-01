@@ -5,7 +5,7 @@ metadata:
   name: unlock-viewer-role
 rules:
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - unlocks
   verbs:
@@ -13,7 +13,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - unlocks/status
   verbs:

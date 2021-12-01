@@ -14,7 +14,7 @@ rules:
   - create
   - patch
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - commits
   verbs:
@@ -26,13 +26,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - commits/finalizers
   verbs:
   - update
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - commits/status
   verbs:
@@ -40,7 +40,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - createsubscriptions
   verbs:
@@ -52,13 +52,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - createsubscriptions/finalizers
   verbs:
   - update
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - createsubscriptions/status
   verbs:
@@ -66,7 +66,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - editconfigs
   verbs:
@@ -78,13 +78,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - editconfigs/finalizers
   verbs:
   - update
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - editconfigs/status
   verbs:
@@ -92,7 +92,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - establishsubscriptions
   verbs:
@@ -104,13 +104,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - establishsubscriptions/finalizers
   verbs:
   - update
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - establishsubscriptions/status
   verbs:
@@ -118,7 +118,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - events
   verbs:
@@ -130,7 +130,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - getconfigs
   verbs:
@@ -142,13 +142,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - getconfigs/finalizers
   verbs:
   - update
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - getconfigs/status
   verbs:
@@ -156,7 +156,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - gets
   verbs:
@@ -168,13 +168,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - gets/finalizers
   verbs:
   - update
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - gets/status
   verbs:
@@ -182,7 +182,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - locks
   verbs:
@@ -194,13 +194,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - locks/finalizers
   verbs:
   - update
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - locks/status
   verbs:
@@ -208,7 +208,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - mountpoints
   verbs:
@@ -220,13 +220,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - mountpoints/finalizers
   verbs:
   - update
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - mountpoints/status
   verbs:
@@ -234,7 +234,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - rpcs
   verbs:
@@ -246,13 +246,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - rpcs/finalizers
   verbs:
   - update
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - rpcs/status
   verbs:
@@ -260,7 +260,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - unlocks
   verbs:
@@ -272,13 +272,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - unlocks/finalizers
   verbs:
   - update
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - unlocks/status
   verbs:

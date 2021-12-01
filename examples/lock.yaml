@@ -1,4 +1,4 @@
-apiVersion: netconf.adetalhouet.io/v1
+apiVersion: netconf.openshift-telco.io/v1
 kind: Lock
 metadata:
   name: lock-csr1kv

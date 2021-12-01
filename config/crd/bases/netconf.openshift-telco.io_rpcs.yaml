@@ -6,20 +6,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
-  name: locks.netconf.adetalhouet.io
+  name: rpcs.netconf.openshift-telco.io
 spec:
-  group: netconf.adetalhouet.io
+  group: netconf.openshift-telco.io
   names:
-    kind: Lock
-    listKind: LockList
-    plural: locks
-    singular: lock
+    kind: RPC
+    listKind: RPCList
+    plural: rpcs
+    singular: rpc
   scope: Namespaced
   versions:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: Lock is the Schema for the locks API
+        description: RPC is the Schema for the rpcs API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -34,15 +34,10 @@ spec:
           metadata:
             type: object
           spec:
-            description: LockSpec defines the desired state of Lock
+            description: RPCSpec defines the desired state of RPC
             properties:
               mountPoint:
                 description: Defines the NETCONF session to use
-                type: string
-              target:
-                default: candidate
-                description: Identify the datastore against which the operation should
-                  be performed. Default to `candidate`.
                 type: string
               timeout:
                 default: 1
@@ -50,8 +45,12 @@ spec:
                   defaults to 1 seconds
                 format: int32
                 type: integer
+              xml:
+                description: Define the XML payload to sent
+                type: string
             required:
             - mountPoint
+            - xml
             type: object
           status:
             properties:

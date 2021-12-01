@@ -38,10 +38,10 @@ import (
 	netconfv1 "github.com/openshift-telco/netconf-operator/api/v1"
 )
 
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=gets,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=gets/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=gets/finalizers,verbs=update
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=events,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=netconf.openshift-telco.io,resources=gets,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=netconf.openshift-telco.io,resources=gets/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=netconf.openshift-telco.io,resources=gets/finalizers,verbs=update
+//+kubebuilder:rbac:groups=netconf.openshift-telco.io,resources=events,verbs=get;list;watch;create;update;patch;delete
 
 // GetReconciler reconciles a Get object
 type GetReconciler struct {

@@ -38,9 +38,9 @@ import (
 	netconfv1 "github.com/openshift-telco/netconf-operator/api/v1"
 )
 
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=rpcs,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=rpcs/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=rpcs/finalizers,verbs=update
+//+kubebuilder:rbac:groups=netconf.openshift-telco.io,resources=rpcs,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=netconf.openshift-telco.io,resources=rpcs/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=netconf.openshift-telco.io,resources=rpcs/finalizers,verbs=update
 
 // RPCReconciler reconciles a RPC object
 type RPCReconciler struct {

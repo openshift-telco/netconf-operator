@@ -6,20 +6,21 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
-  name: unlocks.netconf.adetalhouet.io
+  name: createsubscriptions.netconf.openshift-telco.io
 spec:
-  group: netconf.adetalhouet.io
+  group: netconf.openshift-telco.io
   names:
-    kind: Unlock
-    listKind: UnlockList
-    plural: unlocks
-    singular: unlock
+    kind: CreateSubscription
+    listKind: CreateSubscriptionList
+    plural: createsubscriptions
+    singular: createsubscription
   scope: Namespaced
   versions:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: Unlock is the Schema for the unlocks API
+        description: CreateSubscription is the Schema for the createsubscriptions
+          API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -34,28 +35,19 @@ spec:
           metadata:
             type: object
           spec:
-            description: UnlockSpec defines the desired state of Unlock
+            description: CreateSubscriptionSpec defines the desired state of CreateSubscription
             properties:
-              dependsOn:
-                description: If this Unlock operation should occur after another operation,
-                  specify the other operation here.
-                properties:
-                  kind:
-                    description: Any of the Kind supported by netconf.adetalhouet.io/v1
-                      Group
-                    type: string
-                  name:
-                    description: The name of the object, which will be checked for
-                      within the same namespace
-                    type: string
-                type: object
               mountPoint:
                 description: Defines the NETCONF session to use
                 type: string
-              target:
-                default: candidate
-                description: Identify the datastore against which the operation should
-                  be performed. Default to `candidate`.
+              startTime:
+                description: Defines the start-time to listen to changes.
+                type: string
+              stopTime:
+                description: Defines the time when to stop listen to changes.
+                type: string
+              stream:
+                description: Defines the stream to subscribe to
                 type: string
               timeout:
                 default: 1

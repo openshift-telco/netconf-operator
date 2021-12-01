@@ -6,20 +6,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
-  name: getconfigs.netconf.adetalhouet.io
+  name: gets.netconf.openshift-telco.io
 spec:
-  group: netconf.adetalhouet.io
+  group: netconf.openshift-telco.io
   names:
-    kind: GetConfig
-    listKind: GetConfigList
-    plural: getconfigs
-    singular: getconfig
+    kind: Get
+    listKind: GetList
+    plural: gets
+    singular: get
   scope: Namespaced
   versions:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: GetConfig is the Schema for the getconfigs API
+        description: Get is the Schema for the gets API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -34,15 +34,17 @@ spec:
           metadata:
             type: object
           spec:
-            description: GetConfigSpec defines the desired state of GetConfig
+            description: GetSpec defines the desired state of Get
             properties:
+              filterType:
+                default: subtree
+                description: Define the filter to apply; see more https://datatracker.ietf.org/doc/html/rfc6241#page-20
+                type: string
+              filterXML:
+                description: Define the XML payload to sent
+                type: string
               mountPoint:
                 description: Defines the NETCONF session to use
-                type: string
-              target:
-                default: running
-                description: Identify the datastore against which the operation should
-                  be performed. Default to `running`.
                 type: string
               timeout:
                 default: 1

@@ -2,16 +2,16 @@
 # since it depends on service name and namespace that are out of this kustomize package.
 # It should be run by config/default
 resources:
-- bases/netconf.adetalhouet.io_mountpoints.yaml
-- bases/netconf.adetalhouet.io_commits.yaml
-- bases/netconf.adetalhouet.io_editconfigs.yaml
-- bases/netconf.adetalhouet.io_getconfigs.yaml
-- bases/netconf.adetalhouet.io_gets.yaml
-- bases/netconf.adetalhouet.io_locks.yaml
-- bases/netconf.adetalhouet.io_unlocks.yaml
-- bases/netconf.adetalhouet.io_rpcs.yaml
-- bases/netconf.adetalhouet.io_establishsubscriptions.yaml
-- bases/netconf.adetalhouet.io_createsubscriptions.yaml
+- bases/netconf.openshift-telco.io_mountpoints.yaml
+- bases/netconf.openshift-telco.io_commits.yaml
+- bases/netconf.openshift-telco.io_editconfigs.yaml
+- bases/netconf.openshift-telco.io_getconfigs.yaml
+- bases/netconf.openshift-telco.io_gets.yaml
+- bases/netconf.openshift-telco.io_locks.yaml
+- bases/netconf.openshift-telco.io_unlocks.yaml
+- bases/netconf.openshift-telco.io_rpcs.yaml
+- bases/netconf.openshift-telco.io_establishsubscriptions.yaml
+- bases/netconf.openshift-telco.io_createsubscriptions.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:

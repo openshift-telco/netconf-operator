@@ -5,7 +5,7 @@ metadata:
   name: editconfig-editor-role
 rules:
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - editconfigs
   verbs:
@@ -17,7 +17,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - netconf.adetalhouet.io
+  - netconf.openshift-telco.io
   resources:
   - editconfigs/status
   verbs:

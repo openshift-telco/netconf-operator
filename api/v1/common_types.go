@@ -8,7 +8,7 @@ import (
 //If such dependency is not met, and/or if the underlying dependency isn't
 //reporting success, the operation will fail.
 type DependsOn struct {
-	// Any of the Kind supported by netconf.adetalhouet.io/v1 Group
+	// Any of the Kind supported by netconf.openshift-telco.io/v1 Group
 	Kind string `json:"kind,omitempty"`
 	// The name of the object, which will be checked for within the same namespace
 	Name string `json:"name,omitempty"`

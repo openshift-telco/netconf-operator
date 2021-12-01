@@ -6,20 +6,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
-  name: mountpoints.netconf.adetalhouet.io
+  name: commits.netconf.openshift-telco.io
 spec:
-  group: netconf.adetalhouet.io
+  group: netconf.openshift-telco.io
   names:
-    kind: MountPoint
-    listKind: MountPointList
-    plural: mountpoints
-    singular: mountpoint
+    kind: Commit
+    listKind: CommitList
+    plural: commits
+    singular: commit
   scope: Namespaced
   versions:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: MountPoint is the Schema for the mountPoints API
+        description: Commit is the Schema for the commits API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -34,36 +34,32 @@ spec:
           metadata:
             type: object
           spec:
-            description: MountPointSpec defines the desired state of MountPoint
+            description: CommitSpec defines the desired state of Commit
             properties:
-              additionalCapabilities:
-                description: This is to instruct the NETCONF client to advertise additional
-                  capabilities
-                items:
-                  type: string
-                type: array
-              password:
-                description: The password to use to authenticate
-                type: string
-              target:
-                description: 'Represents the Netconf server to establish a session
-                  with. By default, port `830` is used. If you need to use another
-                  port, provide the target in the following format: `<host>:<port>`.'
+              dependsOn:
+                description: If this Commit operation should occur after another operation,
+                  specify the other operation here.
+                properties:
+                  kind:
+                    description: Any of the Kind supported by netconf.openshift-telco.io/v1
+                      Group
+                    type: string
+                  name:
+                    description: The name of the object, which will be checked for
+                      within the same namespace
+                    type: string
+                type: object
+              mountPoint:
+                description: Defines the NETCONF session to use
                 type: string
               timeout:
-                default: 15
-                description: Whether to apply timeout while attempting the connection,
-                  expressed in second. By default, set to `15` seconds. Put `0` for
-                  no timeout.
+                default: 1
+                description: Timeout defines the timeout for the NETCONF transaction
+                  defaults to 1 seconds
                 format: int32
                 type: integer
-              username:
-                description: The username to use to authenticate
-                type: string
             required:
-            - password
-            - target
-            - username
+            - mountPoint
             type: object
           status:
             properties:

@@ -4,4 +4,4 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: $(CERTIFICATE_NAMESPACE)/$(CERTIFICATE_NAME)
-  name: unlocks.netconf.adetalhouet.io
+  name: unlocks.netconf.openshift-telco.io

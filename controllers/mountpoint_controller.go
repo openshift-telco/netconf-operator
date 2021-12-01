@@ -38,9 +38,9 @@ import (
 	"github.com/redhat-cop/operator-utils/pkg/util"
 )
 
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=mountpoints,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=mountpoints/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=mountpoints/finalizers,verbs=update
+//+kubebuilder:rbac:groups=netconf.openshift-telco.io,resources=mountpoints,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=netconf.openshift-telco.io,resources=mountpoints/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=netconf.openshift-telco.io,resources=mountpoints/finalizers,verbs=update
 
 // MountPointReconciler reconciles a MountPoint object
 type MountPointReconciler struct {
@@ -105,6 +105,7 @@ func (r *MountPointReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			log.Error(err, "unable to update instance", "instance", instance)
 			return r.ManageError(ctx, instance, err)
 		}
+		return reconcile.Result{}, nil
 	}
 
 	// Managing MountPoint Logic
@@ -140,21 +141,23 @@ func (r *MountPointReconciler) isValid(obj metav1.Object) (bool, error) {
 
 func (r *MountPointReconciler) manageCleanUpLogic(mountPoint *netconfv1.MountPoint) error {
 	s := Sessions[mountPoint.GetNamespacedName()]
-	// Close NETCONF session. If fails, kill the session.
-	rpc, err := s.SyncRPC(message.NewCloseSession(), mountPoint.Spec.Timeout)
-	if err != nil || !rpc.Ok {
-		// If there is a failure here, there is nothing we can do.
-		_, _ = s.SyncRPC(message.NewKillSession(string(rune(s.SessionID))), mountPoint.Spec.Timeout)
-		return nil
+	if s != nil {
+		// Close NETCONF session. If fails, kill the session.
+		rpc, err := s.SyncRPC(message.NewCloseSession(), mountPoint.Spec.Timeout)
+		if err != nil || rpc.Errors != nil {
+			// If there is a failure here, there is nothing we can do.
+			_, _ = s.SyncRPC(message.NewKillSession(string(rune(s.SessionID))), mountPoint.Spec.Timeout)
+		}
+
+		// remove cached session from inventory
+		delete(Sessions, mountPoint.GetNamespacedName())
+
+		// blindly remove stream handler
+		s.Listener.Remove(message.NetconfNotificationStreamHandler)
+
+		return s.Close()
 	}
-
-	// remove cached session from inventory
-	delete(Sessions, mountPoint.GetNamespacedName())
-
-	// blindly remove stream handler
-	s.Listener.Remove(message.NetconfNotificationStreamHandler)
-
-	return s.Close()
+	return nil
 }
 
 func (r *MountPointReconciler) manageOperatorLogic(obj *netconfv1.MountPoint, log logr.Logger) error {

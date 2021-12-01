@@ -38,9 +38,9 @@ import (
 	netconfv1 "github.com/openshift-telco/netconf-operator/api/v1"
 )
 
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=commits,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=commits/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=commits/finalizers,verbs=update
+//+kubebuilder:rbac:groups=netconf.openshift-telco.io,resources=commits,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=netconf.openshift-telco.io,resources=commits/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=netconf.openshift-telco.io,resources=commits/finalizers,verbs=update
 
 // CommitReconciler reconciles a Commit object
 type CommitReconciler struct {

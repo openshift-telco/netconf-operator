@@ -6,21 +6,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
-  name: createsubscriptions.netconf.adetalhouet.io
+  name: getconfigs.netconf.openshift-telco.io
 spec:
-  group: netconf.adetalhouet.io
+  group: netconf.openshift-telco.io
   names:
-    kind: CreateSubscription
-    listKind: CreateSubscriptionList
-    plural: createsubscriptions
-    singular: createsubscription
+    kind: GetConfig
+    listKind: GetConfigList
+    plural: getconfigs
+    singular: getconfig
   scope: Namespaced
   versions:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: CreateSubscription is the Schema for the createsubscriptions
-          API
+        description: GetConfig is the Schema for the getconfigs API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -35,19 +34,15 @@ spec:
           metadata:
             type: object
           spec:
-            description: CreateSubscriptionSpec defines the desired state of CreateSubscription
+            description: GetConfigSpec defines the desired state of GetConfig
             properties:
               mountPoint:
                 description: Defines the NETCONF session to use
                 type: string
-              startTime:
-                description: Defines the start-time to listen to changes.
-                type: string
-              stopTime:
-                description: Defines the time when to stop listen to changes.
-                type: string
-              stream:
-                description: Defines the stream to subscribe to
+              target:
+                default: running
+                description: Identify the datastore against which the operation should
+                  be performed. Default to `running`.
                 type: string
               timeout:
                 default: 1

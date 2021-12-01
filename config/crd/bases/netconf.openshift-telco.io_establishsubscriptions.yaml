@@ -6,20 +6,21 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
-  name: editconfigs.netconf.adetalhouet.io
+  name: establishsubscriptions.netconf.openshift-telco.io
 spec:
-  group: netconf.adetalhouet.io
+  group: netconf.openshift-telco.io
   names:
-    kind: EditConfig
-    listKind: EditConfigList
-    plural: editconfigs
-    singular: editconfig
+    kind: EstablishSubscription
+    listKind: EstablishSubscriptionList
+    plural: establishsubscriptions
+    singular: establishsubscription
   scope: Namespaced
   versions:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: EditConfig is the Schema for the editconfigs API
+        description: EstablishSubscription is the Schema for the establishsubscriptions
+          API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -34,43 +35,10 @@ spec:
           metadata:
             type: object
           spec:
-            description: EditConfigSpec defines the desired state of EditConfig
+            description: EstablishSubscriptionSpec defines the desired state of EstablishSubscription
             properties:
-              commit:
-                default: false
-                description: Whether to commit the changes.
-                type: boolean
-              dependsOn:
-                description: If this EditConfig operation should occur after another
-                  operation, specify the other operation here.
-                properties:
-                  kind:
-                    description: Any of the Kind supported by netconf.adetalhouet.io/v1
-                      Group
-                    type: string
-                  name:
-                    description: The name of the object, which will be checked for
-                      within the same namespace
-                    type: string
-                type: object
-              lock:
-                default: false
-                description: Whether to lock the specified datastore before doing
-                  the edit-config
-                type: boolean
               mountPoint:
                 description: Defines the NETCONF session to use
-                type: string
-              operation:
-                default: merge
-                description: Defined the operation to perform. Default to `merge`.
-                  See https://datatracker.ietf.org/doc/html/rfc6241#section-7.2 for
-                  supported operations.
-                type: string
-              target:
-                default: candidate
-                description: Identify the datastore against which the operation should
-                  be performed. Default to `candidate`.
                 type: string
               timeout:
                 default: 1
@@ -78,13 +46,8 @@ spec:
                   defaults to 1 seconds
                 format: int32
                 type: integer
-              unlock:
-                default: false
-                description: Whether to unlock the specified datastore before doing
-                  the edit-config
-                type: boolean
               xml:
-                description: Define the XML payload to sent
+                description: Defines the `<establish-subscription` RPC to sent
                 type: string
             required:
             - mountPoint

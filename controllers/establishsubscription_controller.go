@@ -39,9 +39,9 @@ import (
 	"time"
 )
 
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=establishsubscriptions,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=establishsubscriptions/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=establishsubscriptions/finalizers,verbs=update
+//+kubebuilder:rbac:groups=netconf.openshift-telco.io,resources=establishsubscriptions,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=netconf.openshift-telco.io,resources=establishsubscriptions/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=netconf.openshift-telco.io,resources=establishsubscriptions/finalizers,verbs=update
 // +kubebuilder:rbac:groups="",resources=events,verbs=create;patch
 
 // EstablishSubscriptionReconciler reconciles a EstablishSubscription object

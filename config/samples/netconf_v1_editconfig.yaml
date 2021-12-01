@@ -1,7 +1,0 @@
-apiVersion: netconf.adetalhouet.io/v1
-kind: EditConfig
-metadata:
-  name: editconfig-sample
-spec:
-  # Add fields here
-  foo: bar

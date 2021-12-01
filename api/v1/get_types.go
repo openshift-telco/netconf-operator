@@ -30,7 +30,6 @@ type GetSpec struct {
 	// +kubebuilder:default:=1
 	Timeout int32 `json:"timeout,omitempty"`
 	// Define the filter to apply; see more https://datatracker.ietf.org/doc/html/rfc6241#page-20
-	// +kubebuilder:default:="subtree"
 	FilterType string `json:"filterType,omitempty"`
 	// Define the XML payload to sent
 	FilterXML string `json:"filterXML,omitempty"`

@@ -12,19 +12,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-const mountPointControllerName = "netconf-mountPoint-controller"
-const commitControllerName = "netconf-commit-controller"
-const getControllerName = "netconf-get-controller"
-const getConfigControllerName = "netconf-getConfig-controller"
-const editConfigControllerName = "netconf-editConfig-controller"
-const lockControllerName = "netconf-lock-controller"
-const unlockControllerName = "netconf-unlock-controller"
-const rpcControllerName = "netconf-RPC-controller"
-const createSubscriptionControllerName = "netconf-createSubscription-controller"
-const establishSubscriptionControllerName = "netconf-establishSubscription-controller"
+const mountPointControllerName = "mountpoint"
+const commitControllerName = "commit"
+const getControllerName = "get"
+const getConfigControllerName = "get-config"
+const editConfigControllerName = "edit-config"
+const lockControllerName = "lock"
+const unlockControllerName = "unlock"
+const rpcControllerName = "RPC"
+const createSubscriptionControllerName = "create-subscription"
+const establishSubscriptionControllerName = "establish-subscription"
 
-const mountpointFinalizer = "io.adetalhouet.netconf.mountpoint.finalizer"
-const establishSubscriptionFinalizer = "io.adetalhouet.netconf.establishsubscription.finalizer"
+const mountpointFinalizer = "io.openshift-telco.netconf.mountpoint.finalizer"
+const establishSubscriptionFinalizer = "io.openshift-telco.netconf.establishsubscription.finalizer"
 
 // Sessions hold the active SSH session to NETCONF servers.
 // The key is the NamespacedName of the MountPoint object referred in the CR

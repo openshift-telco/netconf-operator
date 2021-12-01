@@ -1,4 +1,4 @@
-apiVersion: netconf.adetalhouet.io/v1
+apiVersion: netconf.openshift-telco.io/v1
 kind: Get
 metadata:
   name: get
@@ -7,5 +7,5 @@ spec:
   mountPoint: csr1kv-mountpoint
   filterType: subtree
   filterXML: |-
-    <netconf-state xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring">
-    </netconf-state>
+    <routing xmlns="urn:ietf:params:xml:ns:yang:ietf-routing">
+    </routing>

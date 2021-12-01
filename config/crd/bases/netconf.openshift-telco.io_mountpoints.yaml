@@ -6,20 +6,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
-  name: commits.netconf.adetalhouet.io
+  name: mountpoints.netconf.openshift-telco.io
 spec:
-  group: netconf.adetalhouet.io
+  group: netconf.openshift-telco.io
   names:
-    kind: Commit
-    listKind: CommitList
-    plural: commits
-    singular: commit
+    kind: MountPoint
+    listKind: MountPointList
+    plural: mountpoints
+    singular: mountpoint
   scope: Namespaced
   versions:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: Commit is the Schema for the commits API
+        description: MountPoint is the Schema for the mountPoints API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -34,32 +34,36 @@ spec:
           metadata:
             type: object
           spec:
-            description: CommitSpec defines the desired state of Commit
+            description: MountPointSpec defines the desired state of MountPoint
             properties:
-              dependsOn:
-                description: If this Commit operation should occur after another operation,
-                  specify the other operation here.
-                properties:
-                  kind:
-                    description: Any of the Kind supported by netconf.adetalhouet.io/v1
-                      Group
-                    type: string
-                  name:
-                    description: The name of the object, which will be checked for
-                      within the same namespace
-                    type: string
-                type: object
-              mountPoint:
-                description: Defines the NETCONF session to use
+              additionalCapabilities:
+                description: This is to instruct the NETCONF client to advertise additional
+                  capabilities
+                items:
+                  type: string
+                type: array
+              password:
+                description: The password to use to authenticate
+                type: string
+              target:
+                description: 'Represents the Netconf server to establish a session
+                  with. By default, port `830` is used. If you need to use another
+                  port, provide the target in the following format: `<host>:<port>`.'
                 type: string
               timeout:
-                default: 1
-                description: Timeout defines the timeout for the NETCONF transaction
-                  defaults to 1 seconds
+                default: 15
+                description: Whether to apply timeout while attempting the connection,
+                  expressed in second. By default, set to `15` seconds. Put `0` for
+                  no timeout.
                 format: int32
                 type: integer
+              username:
+                description: The username to use to authenticate
+                type: string
             required:
-            - mountPoint
+            - password
+            - target
+            - username
             type: object
           status:
             properties:

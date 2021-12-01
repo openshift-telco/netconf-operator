@@ -1,4 +1,4 @@
-apiVersion: netconf.adetalhouet.io/v1
+apiVersion: netconf.openshift-telco.io/v1
 kind: EditConfig
 metadata:
   name: edit-config-change-hostname
@@ -12,5 +12,5 @@ spec:
   unlock: true
   xml: |-
     <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
-      <hostname>test</hostname>
+      <hostname>r1</hostname>
     </native>

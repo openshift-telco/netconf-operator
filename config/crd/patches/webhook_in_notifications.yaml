@@ -2,7 +2,7 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: notifications.netconf.adetalhouet.io
+  name: notifications.netconf.openshift-telco.io
 spec:
   conversion:
     strategy: Webhook

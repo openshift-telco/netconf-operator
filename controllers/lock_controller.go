@@ -38,9 +38,9 @@ import (
 	netconfv1 "github.com/openshift-telco/netconf-operator/api/v1"
 )
 
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=locks,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=locks/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=locks/finalizers,verbs=update
+//+kubebuilder:rbac:groups=netconf.openshift-telco.io,resources=locks,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=netconf.openshift-telco.io,resources=locks/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=netconf.openshift-telco.io,resources=locks/finalizers,verbs=update
 
 // LockReconciler reconciles a Lock object
 type LockReconciler struct {
