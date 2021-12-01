@@ -1,7 +1,19 @@
+> :heavy_exclamation_mark: *Red Hat does not provide commercial support for the content of these repos*
+
+```bash
+#############################################################################
+DISCLAIMER: THESE ARE UNSUPPORTED COMMUNITY TOOLS.
+
+THE REFERENCES ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+#############################################################################
+```
+
 # NETCONF operator
 
 [![Report Card](https://goreportcard.com/badge/github.com/openshift-telco/netconf-operator)](https://goreportcard.com/report/github.com/openshift-telco/netconf-operator)
-[![Build Status](https://travis-ci.org/adetalhouet/netconf-operator.png)](https://travis-ci.org/adetalhouet/netconf-operator)
+[![Build Status](https://travis-ci.org/adetalhouet/netconf-operator.png)](https://travis-ci.org/openshift-telco/netconf-operator)
 
 
 This operator provides support for:
