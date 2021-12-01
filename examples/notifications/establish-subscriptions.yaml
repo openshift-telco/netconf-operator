@@ -1,0 +1,14 @@
+apiVersion: netconf.adetalhouet.io/v1
+kind: EstablishSubscription
+metadata:
+  name: netconf-notifications
+spec:
+  mountPoint: csr1kv-mountpoint
+  xml: |-
+    <establish-subscription
+        xmlns="urn:ietf:params:xml:ns:yang:ietf-event-notifications"
+        xmlns:yp="urn:ietf:params:xml:ns:yang:ietf-yang-push">
+      <stream>yp:yang-push</stream>
+      <yp:xpath-filter>/mdt-oper:mdt-oper-data/mdt-subscriptions</yp:xpath-filter>
+      <yp:period>1000</yp:period>
+    </establish-subscription>

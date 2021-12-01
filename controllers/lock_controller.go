@@ -18,7 +18,6 @@ package controllers
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/adetalhouet/go-netconf/netconf/message"
 	"github.com/go-logr/logr"
@@ -32,6 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+	"time"
 
 	"github.com/redhat-cop/operator-utils/pkg/util"
 
@@ -75,7 +75,7 @@ func (r *LockReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 
 	// Managing CR validation
 	if ok, err := r.isValid(instance); !ok {
-		return r.ManageError(ctx, instance, err)
+		return r.ManageErrorWithRequeue(ctx, instance, err, 2*time.Second)
 	}
 
 	// Managing CR Initialization
@@ -90,25 +90,9 @@ func (r *LockReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 
 	// Managing CR Finalization
 	if util.IsBeingDeleted(instance) {
-		if !util.HasFinalizer(instance, finalizer) {
-			return reconcile.Result{}, nil
-		}
-		err := r.manageCleanUpLogic(instance)
-
-		if err != nil {
-			log.Error(err, "unable to delete instance", "instance", instance)
-			return r.ManageError(ctx, instance, err)
-		}
-		util.RemoveFinalizer(instance, finalizer)
-		err = r.GetClient().Update(context.Background(), instance)
-		if err != nil {
-			log.Error(err, "unable to update instance", "instance", instance)
-			return r.ManageError(ctx, instance, err)
-		}
 		return reconcile.Result{}, nil
 	}
 
-	// Managing MountPoint Logic
 	err = r.manageOperatorLogic(instance, log)
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
@@ -118,26 +102,24 @@ func (r *LockReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 }
 
 func (r *LockReconciler) isInitialized(obj metav1.Object) bool {
-	mountPoint, ok := obj.(*netconfv1.Lock)
+	_, ok := obj.(*netconfv1.Lock)
 	if !ok {
 		return false
 	}
-	if util.HasFinalizer(mountPoint, finalizer) {
-		return true
-	}
-	util.AddFinalizer(mountPoint, finalizer)
-	return false
+	return true
 
 }
 
 func (r *LockReconciler) isValid(obj metav1.Object) (bool, error) {
 	instance, ok := obj.(*netconfv1.Lock)
 	if !ok {
-		return false, errors.New("not an Lock object")
+		return false, fmt.Errorf("%s is not an Lock object", obj.GetName())
 	}
 
-	exists := CheckMountPointExists(r.ReconcilerBase,
-		types.NamespacedName{Namespace: instance.Namespace, Name: instance.Spec.MountPoint})
+	exists := CheckMountPointExists(
+		r.ReconcilerBase,
+		types.NamespacedName{Namespace: instance.Namespace, Name: instance.Spec.MountPoint},
+	)
 	if !exists {
 		return false, fmt.Errorf("MountPoint %s doesn't exists", instance.Spec.MountPoint)
 	}
@@ -145,31 +127,21 @@ func (r *LockReconciler) isValid(obj metav1.Object) (bool, error) {
 	return true, nil
 }
 
-func (r *LockReconciler) manageCleanUpLogic(lock *netconfv1.Lock) error {
-
-	// Unlock the session
-	s := Sessions[types.NamespacedName{Namespace: lock.Namespace, Name: lock.Spec.MountPoint}.String()]
-	_, err := s.ExecRPC(message.NewUnlock(lock.Spec.Target))
-
-	return err
-}
-
 func (r *LockReconciler) manageOperatorLogic(lock *netconfv1.Lock, log logr.Logger) error {
-	log.Info(fmt.Sprintf("%s: Send Lock on %s datastore.", lock.Spec.MountPoint, lock.Spec.Target))
+	log.Info(fmt.Sprintf("%s: Send Lock %s on %s datastore.", lock.Spec.MountPoint, lock.Name, lock.Spec.Target))
 
-	s := Sessions[types.NamespacedName{Namespace: lock.Namespace, Name: lock.Spec.MountPoint}.String()]
-	reply, err := s.ExecRPC(message.NewLock(lock.Spec.Target))
-	if err != nil {
-		log.Error(err, fmt.Sprintf("%s: Failed to Lock.", lock.Spec.MountPoint))
-		lock.Status.Status = "failed"
-		lock.Status.RpcReply = reply.RawReply
+	s := Sessions[lock.GetMountPointNamespacedName(lock.Spec.MountPoint)]
+	reply, err := s.SyncRPC(message.NewLock(lock.Spec.Target), lock.Spec.Timeout)
+
+	if err != nil || reply.Errors != nil {
+		log.Info(fmt.Sprintf("%s: Failed to Lock %s.", lock.Spec.MountPoint, lock.Name))
+		lock.Status = "failed"
+		lock.RpcReply = reply.RawReply
 		return err
 	}
-	log.Info(fmt.Sprintf("%s: Successfully executed lock operation.", lock.Spec.MountPoint))
-
-	lock.Status.Status = "success"
-	lock.Status.RpcReply = reply.Data
-
+	log.Info(fmt.Sprintf("%s: Successfully executed lock %s operation.", lock.Spec.MountPoint, lock.Name))
+	lock.Status = "success"
+	lock.RpcReply = reply.Data
 	return nil
 }
 

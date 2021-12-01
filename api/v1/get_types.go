@@ -25,36 +25,15 @@ import (
 type GetSpec struct {
 	// Defines the NETCONF session to use
 	MountPoint string `json:"mountPoint"`
+	// Timeout defines the timeout for the NETCONF transaction
+	// defaults to 1 seconds
+	// +kubebuilder:default:=1
+	Timeout int32 `json:"timeout,omitempty"`
 	// Define the filter to apply; see more https://datatracker.ietf.org/doc/html/rfc6241#page-20
 	// +kubebuilder:default:="subtree"
 	FilterType string `json:"filterType,omitempty"`
 	// Define the XML payload to sent
-	XML string `json:"xml,omitempty"`
-}
-
-// GetStatus defines the observed state of Get
-type GetStatus struct {
-	// +patchMergeKey=type
-	// +patchStrategy=merge
-	// +listType=map
-	// +listMapKey=type
-	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
-	// Either `success` or `failed`
-	Status string `json:"status,omitempty"`
-	// Provides the received RPC reply
-	RpcReply string `json:"rpcReply,omitempty"`
-}
-
-func (obj *Get) GetConditions() []metav1.Condition {
-	return obj.Status.Conditions
-}
-
-func (obj *Get) SetConditions(reconcileStatus []metav1.Condition) {
-	obj.Status.Conditions = reconcileStatus
-}
-
-func (obj *Get) GetNamespacedName() string {
-	return types.NamespacedName{Namespace: obj.Namespace, Name: obj.Name}.String()
+	FilterXML string `json:"filterXML,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -65,8 +44,8 @@ type Get struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   GetSpec   `json:"spec,omitempty"`
-	Status GetStatus `json:"status,omitempty"`
+	Spec      GetSpec `json:"spec,omitempty"`
+	RPCStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -80,4 +59,12 @@ type GetList struct {
 
 func init() {
 	SchemeBuilder.Register(&Get{}, &GetList{})
+}
+
+func (obj *Get) GetMountPointNamespacedName(mountpoint string) string {
+	return types.NamespacedName{Namespace: obj.Namespace, Name: mountpoint}.String()
+}
+
+func (obj *Get) GetNamespacedName() string {
+	return types.NamespacedName{Namespace: obj.Namespace, Name: obj.Name}.String()
 }

@@ -18,7 +18,6 @@ package controllers
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/adetalhouet/go-netconf/netconf/message"
 	"github.com/go-logr/logr"
@@ -32,6 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+	"time"
 
 	"github.com/redhat-cop/operator-utils/pkg/util"
 
@@ -75,7 +75,7 @@ func (r *CommitReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	// Managing CR validation
 	if ok, err := r.isValid(instance); !ok {
-		return r.ManageError(ctx, instance, err)
+		return r.ManageErrorWithRequeue(ctx, instance, err, 2*time.Second)
 	}
 
 	// Managing CR Initialization
@@ -90,25 +90,9 @@ func (r *CommitReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	// Managing CR Finalization
 	if util.IsBeingDeleted(instance) {
-		if !util.HasFinalizer(instance, finalizer) {
-			return reconcile.Result{}, nil
-		}
-		err := r.manageCleanUpLogic(instance)
-
-		if err != nil {
-			log.Error(err, "unable to delete instance", "instance", instance)
-			return r.ManageError(ctx, instance, err)
-		}
-		util.RemoveFinalizer(instance, finalizer)
-		err = r.GetClient().Update(context.Background(), instance)
-		if err != nil {
-			log.Error(err, "unable to update instance", "instance", instance)
-			return r.ManageError(ctx, instance, err)
-		}
 		return reconcile.Result{}, nil
 	}
 
-	// Managing MountPoint Logic
 	err = r.manageOperatorLogic(instance, log)
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
@@ -118,22 +102,17 @@ func (r *CommitReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 }
 
 func (r *CommitReconciler) isInitialized(obj metav1.Object) bool {
-	mountPoint, ok := obj.(*netconfv1.Commit)
+	_, ok := obj.(*netconfv1.Commit)
 	if !ok {
 		return false
 	}
-	if util.HasFinalizer(mountPoint, finalizer) {
-		return true
-	}
-	util.AddFinalizer(mountPoint, finalizer)
-	return false
-
+	return true
 }
 
 func (r *CommitReconciler) isValid(obj metav1.Object) (bool, error) {
 	instance, ok := obj.(*netconfv1.Commit)
 	if !ok {
-		return false, errors.New("not an Commit object")
+		return false, fmt.Errorf("%s is not an Commit object", obj.GetName())
 	}
 
 	exists := CheckMountPointExists(
@@ -144,53 +123,47 @@ func (r *CommitReconciler) isValid(obj metav1.Object) (bool, error) {
 		return false, fmt.Errorf("MountPoint %s doesn't exists", instance.Spec.MountPoint)
 	}
 
-	return true, nil
-}
-
-func (r *CommitReconciler) manageCleanUpLogic(commit *netconfv1.Commit) error {
-	// TODO NOOP
-	return nil
-}
-
-func (r *CommitReconciler) manageOperatorLogic(commit *netconfv1.Commit, log logr.Logger) error {
-	log.Info(fmt.Sprintf("%s: Send Commit.", commit.Spec.MountPoint))
-
-	s := Sessions[types.NamespacedName{Namespace: commit.Namespace, Name: commit.Spec.MountPoint}.String()]
-
-	if !commit.Spec.DependsOn.IsNil() {
-		err := validateDependency(r.ReconcilerBase, commit.Namespace, commit.Spec.DependsOn)
+	if !instance.Spec.DependsOn.IsNil() {
+		err := validateDependency(r.ReconcilerBase, instance.Namespace, instance.Spec.DependsOn)
 		if err != nil {
-			log.Error(err, "Failed to validate dependency.")
-			return err
+			return false, err
 		}
 	}
 
-	reply, err := s.ExecRPC(message.NewCommit())
-	if err != nil {
-		log.Error(err, fmt.Sprintf("%s: Failed to Commit.", commit.Spec.MountPoint))
-		commit.Status.Status = "failed"
-		commit.Status.RpcReply = reply.RawReply
+	return true, nil
+}
+
+func (r *CommitReconciler) manageOperatorLogic(obj *netconfv1.Commit, log logr.Logger) error {
+	log.Info(fmt.Sprintf("%s: Execute Commit operation %s.", obj.Spec.MountPoint, obj.Name))
+
+	s := Sessions[obj.GetMountPointNamespacedName(obj.Spec.MountPoint)]
+	reply, err := s.SyncRPC(message.NewCommit(), obj.Spec.Timeout)
+
+	if err != nil || reply.Errors != nil {
+		log.Info(fmt.Sprintf("%s: Failed to Commit %s", obj.Spec.MountPoint, obj.Name))
+		obj.Status = "failed"
+		obj.RpcReply = reply.RawReply
 		return err
 	}
-	log.Info(fmt.Sprintf("%s: Successfully executed commit operation.", commit.Spec.MountPoint))
 
-	commit.Status.Status = "success"
-	commit.Status.RpcReply = reply.Data
-
+	log.Info(fmt.Sprintf("%s: Successfully executed Commit operation %s.", obj.Spec.MountPoint, obj.Name))
+	obj.Status = "success"
+	obj.RpcReply = reply.Data
 	return nil
+
 }
 
 func newCommitReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &CommitReconciler{
+	c := &CommitReconciler{
 		ReconcilerBase: util.NewReconcilerBase(
 			mgr.GetClient(), mgr.GetScheme(), mgr.GetConfig(), mgr.GetEventRecorderFor(commitControllerName),
 			mgr.GetAPIReader(),
 		),
 	}
+	return c
 }
 
 func addCommit(mgr manager.Manager, r reconcile.Reconciler) error {
-	// Create a new controller
 	c, err := controller.New(commitControllerName, mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err

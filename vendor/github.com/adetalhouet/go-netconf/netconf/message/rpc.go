@@ -21,11 +21,22 @@ import (
 	"fmt"
 )
 
+// RPCMethod defines the interface for creating an RPC method.
+// This is mostly a marker interface to abstract all RPCs
+type RPCMethod interface {
+	GetMessageID() string
+}
+
 // RPC is used as a wrapper for any sent RPC
 type RPC struct {
 	XMLName   xml.Name    `xml:"urn:ietf:params:xml:ns:netconf:base:1.0 rpc"`
 	MessageID string      `xml:"message-id,attr"`
 	Data      interface{} `xml:",innerxml"`
+}
+
+// GetMessageID returns the message-id of the RPC
+func (rpc *RPC) GetMessageID() string {
+	return rpc.MessageID
 }
 
 // NewRPC formats an RPC message
@@ -60,6 +71,8 @@ type RPCReply struct {
 	Data      string     `xml:",innerxml"`
 	Ok        bool       `xml:"ok,omitempty"`
 	RawReply  string     `xml:"-"`
+	// this is in the case we are receiving a reply to a NETCONF notification subscription
+	SubscriptionID string `xml:"subscription-id,omitempty"`
 }
 
 // NewRPCReply creates an instance of an RPCReply based on what was received

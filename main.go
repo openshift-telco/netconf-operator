@@ -123,9 +123,14 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "RPC")
 	}
 
-	err = controllers.AddNotification(mgr)
+	err = controllers.AddEstablishSubscription(mgr)
 	if err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Notification")
+		setupLog.Error(err, "unable to create controller", "controller", "EstablishSubscription")
+	}
+
+	err = controllers.AddCreateSubscription(mgr)
+	if err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "CreateSubscription")
 	}
 
 	//+kubebuilder:scaffold:builder

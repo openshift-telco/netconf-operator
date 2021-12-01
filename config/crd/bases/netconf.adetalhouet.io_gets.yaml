@@ -40,18 +40,28 @@ spec:
                 default: subtree
                 description: Define the filter to apply; see more https://datatracker.ietf.org/doc/html/rfc6241#page-20
                 type: string
+              filterXML:
+                description: Define the XML payload to sent
+                type: string
               mountPoint:
                 description: Defines the NETCONF session to use
                 type: string
-              xml:
-                description: Define the XML payload to sent
-                type: string
+              timeout:
+                default: 1
+                description: Timeout defines the timeout for the NETCONF transaction
+                  defaults to 1 seconds
+                format: int32
+                type: integer
             required:
             - mountPoint
             type: object
           status:
-            description: GetStatus defines the observed state of Get
             properties:
+              capabilities:
+                description: Provide the list of supported capabilities
+                items:
+                  type: string
+                type: array
               conditions:
                 items:
                   description: "Condition contains details for one aspect of the current
@@ -129,6 +139,9 @@ spec:
                 type: string
               status:
                 description: Either `success` or `failed`
+                type: string
+              subscriptionID:
+                description: In case of a notification, keep track of the subscription-id
                 type: string
             type: object
         type: object

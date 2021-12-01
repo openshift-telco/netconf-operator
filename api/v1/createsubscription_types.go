@@ -21,48 +21,51 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-// LockSpec defines the desired state of Lock
-type LockSpec struct {
+// CreateSubscriptionSpec defines the desired state of CreateSubscription
+type CreateSubscriptionSpec struct {
 	// Defines the NETCONF session to use
 	MountPoint string `json:"mountPoint"`
 	// Timeout defines the timeout for the NETCONF transaction
 	// defaults to 1 seconds
 	// +kubebuilder:default:=1
 	Timeout int32 `json:"timeout,omitempty"`
-	// Identify the datastore against which the operation should be performed. Default to `candidate`.
-	// +kubebuilder:default:="candidate"
-	Target string `json:"target,omitempty"`
+	// Defines the stream to subscribe to
+	Stream string `json:"stream,omitempty"`
+	// Defines the start-time to listen to changes.
+	StartTime string `json:"startTime,omitempty"`
+	// Defines the time when to stop listen to changes.
+	StopTime string `json:"stopTime,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// Lock is the Schema for the locks API
-type Lock struct {
+// CreateSubscription is the Schema for the createsubscriptions API
+type CreateSubscription struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec      LockSpec `json:"spec,omitempty"`
+	Spec      CreateSubscriptionSpec `json:"spec,omitempty"`
 	RPCStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// LockList contains a list of Lock
-type LockList struct {
+// CreateSubscriptionList contains a list of CreateSubscription
+type CreateSubscriptionList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Lock `json:"items"`
+	Items           []CreateSubscription `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Lock{}, &LockList{})
+	SchemeBuilder.Register(&CreateSubscription{}, &CreateSubscriptionList{})
 }
 
-func (obj *Lock) GetMountPointNamespacedName(mountpoint string) string {
+func (obj *CreateSubscription) GetMountPointNamespacedName(mountpoint string) string {
 	return types.NamespacedName{Namespace: obj.Namespace, Name: mountpoint}.String()
 }
 
-func (obj *Lock) GetNamespacedName() string {
+func (obj *CreateSubscription) GetNamespacedName() string {
 	return types.NamespacedName{Namespace: obj.Namespace, Name: obj.Name}.String()
 }

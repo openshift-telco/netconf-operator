@@ -18,7 +18,6 @@ package controllers
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/adetalhouet/go-netconf/netconf/message"
 	"github.com/go-logr/logr"
@@ -32,6 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+	"time"
 
 	"github.com/redhat-cop/operator-utils/pkg/util"
 
@@ -75,7 +75,7 @@ func (r *RPCReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 
 	// Managing CR validation
 	if ok, err := r.isValid(instance); !ok {
-		return r.ManageError(ctx, instance, err)
+		return r.ManageErrorWithRequeue(ctx, instance, err, 2*time.Second)
 	}
 
 	// Managing CR Initialization
@@ -90,21 +90,21 @@ func (r *RPCReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 
 	// Managing CR Finalization
 	if util.IsBeingDeleted(instance) {
-		if !util.HasFinalizer(instance, finalizer) {
-			return reconcile.Result{}, nil
-		}
-		err := r.manageCleanUpLogic(instance)
-
-		if err != nil {
-			log.Error(err, "unable to delete instance", "instance", instance)
-			return r.ManageError(ctx, instance, err)
-		}
-		util.RemoveFinalizer(instance, finalizer)
-		err = r.GetClient().Update(context.Background(), instance)
-		if err != nil {
-			log.Error(err, "unable to update instance", "instance", instance)
-			return r.ManageError(ctx, instance, err)
-		}
+		//if !util.HasFinalizer(instance, finalizer) {
+		//	return reconcile.Result{}, nil
+		//}
+		//err := r.manageCleanUpLogic(instance)
+		//
+		//if err != nil {
+		//	log.Error(err, "unable to delete instance", "instance", instance)
+		//	return r.ManageError(ctx, instance, err)
+		//}
+		//util.RemoveFinalizer(instance, finalizer)
+		//err = r.GetClient().Update(context.Background(), instance)
+		//if err != nil {
+		//	log.Error(err, "unable to update instance", "instance", instance)
+		//	return r.ManageError(ctx, instance, err)
+		//}
 		return reconcile.Result{}, nil
 	}
 
@@ -118,22 +118,22 @@ func (r *RPCReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 }
 
 func (r *RPCReconciler) isInitialized(obj metav1.Object) bool {
-	mountPoint, ok := obj.(*netconfv1.RPC)
+	_, ok := obj.(*netconfv1.RPC)
 	if !ok {
 		return false
 	}
-	if util.HasFinalizer(mountPoint, finalizer) {
-		return true
-	}
-	util.AddFinalizer(mountPoint, finalizer)
-	return false
+	//if util.HasFinalizer(mountPoint, finalizer) {
+	//	return true
+	//}
+	//util.AddFinalizer(mountPoint, finalizer)
+	return true
 
 }
 
 func (r *RPCReconciler) isValid(obj metav1.Object) (bool, error) {
 	instance, ok := obj.(*netconfv1.RPC)
 	if !ok {
-		return false, errors.New("not an RPC object")
+		return false, fmt.Errorf("%s not an RPC object", obj.GetName())
 	}
 
 	exists := CheckMountPointExists(
@@ -147,28 +147,29 @@ func (r *RPCReconciler) isValid(obj metav1.Object) (bool, error) {
 	return true, nil
 }
 
-func (r *RPCReconciler) manageCleanUpLogic(RPC *netconfv1.RPC) error {
+//func (r *RPCReconciler) manageCleanUpLogic(RPC *netconfv1.RPC) error {
+//
+//	// TODO NOOP
+//
+//	return nil
+//}
 
-	// TODO NOOP
+func (r *RPCReconciler) manageOperatorLogic(obj *netconfv1.RPC, log logr.Logger) error {
+	log.Info(fmt.Sprintf("%s: Send RPC %s.", obj.Spec.MountPoint, obj.Name))
 
-	return nil
-}
+	s := Sessions[obj.GetMountPointNamespacedName(obj.Spec.MountPoint)]
+	reply, err := s.SyncRPC(message.NewRPC(obj.Spec.XML), obj.Spec.Timeout)
 
-func (r *RPCReconciler) manageOperatorLogic(RPC *netconfv1.RPC, log logr.Logger) error {
-	log.Info(fmt.Sprintf("%s: Send RPC.", RPC.Spec.MountPoint))
-
-	s := Sessions[types.NamespacedName{Namespace: RPC.Namespace, Name: RPC.Spec.MountPoint}.String()]
-	reply, err := s.ExecRPC(message.NewRPC(RPC.Spec.XML))
-	if err != nil {
-		log.Error(err, fmt.Sprintf("%s: Failed to Unlock.", RPC.Spec.MountPoint))
-		RPC.Status.Status = "failed"
-		RPC.Status.RpcReply = reply.RawReply
+	if err != nil || reply.Errors != nil {
+		log.Info(fmt.Sprintf("%s: Failed to send RPC %s.", obj.Spec.MountPoint, obj.Name))
+		obj.Status = "failed"
+		obj.RpcReply = reply.RawReply
 		return err
 	}
-	log.Info(fmt.Sprintf("%s: Successfully executed RPC operation.", RPC.Spec.MountPoint))
 
-	RPC.Status.Status = "success"
-	RPC.Status.RpcReply = reply.Data
+	log.Info(fmt.Sprintf("%s: Successfully executed RPC %s operation.", obj.Spec.MountPoint, obj.Name))
+	obj.Status = "success"
+	obj.RpcReply = reply.Data
 
 	return nil
 }

@@ -18,14 +18,14 @@ package controllers
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"github.com/adetalhouet/go-netconf/netconf/message"
+	"github.com/adetalhouet/go-netconf/netconf"
 	"github.com/go-logr/logr"
+	"github.com/redhat-cop/operator-utils/pkg/util"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	ctrl "sigs.k8s.io/controller-runtime"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -34,44 +34,45 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	"time"
 
-	"github.com/redhat-cop/operator-utils/pkg/util"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	netconfv1 "github.com/adetalhouet/netconf-operator/api/v1"
 )
 
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=getconfigs,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=getconfigs/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=getconfigs/finalizers,verbs=update
-//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=events,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=createsubscriptions,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=createsubscriptions/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=createsubscriptions/finalizers,verbs=update
+// +kubebuilder:rbac:groups="",resources=events,verbs=create;patch
 
-// GetConfigReconciler reconciles a GetConfig object
-type GetConfigReconciler struct {
+// CreateSubscriptionReconciler reconciles a CreateSubscription object
+type CreateSubscriptionReconciler struct {
 	util.ReconcilerBase
+	recorder record.EventRecorder
 }
 
-// AddGetConfig Add creates a new MountPoint Controller and adds it to the Manager.
-func AddGetConfig(mgr manager.Manager) error {
-	return addGetConfig(mgr, newGetConfigReconciler(mgr))
+// AddCreateSubscription creates a new MountPoint Controller and adds it to the Manager.
+func AddCreateSubscription(mgr manager.Manager) error {
+	return addCreateSubscription(mgr, newCreateSubscriptionReconciler(mgr))
 }
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-func (r *GetConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	var log = logf.Log.WithName(getConfigControllerName)
+func (r *CreateSubscriptionReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	var log = logf.Log.WithName(createSubscriptionControllerName)
 
 	reqLogger := log.WithValues("Request.Namespace", req.Namespace, "Request.Name", req.Name)
-	reqLogger.Info("Reconciling GetConfig")
+	reqLogger.Info("Reconciling CreateSubscription")
 
 	// Fetch the CRD instance
-	instance := &netconfv1.GetConfig{}
+	instance := &netconfv1.CreateSubscription{}
 	err := r.GetClient().Get(context.Background(), req.NamespacedName, instance)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			log.Info("GetConfig resource not found. Ignoring since object must be deleted")
+			log.Info("CreateSubscription resource not found. Ignoring since object must be deleted")
 			return ctrl.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
-		log.Error(err, "Failed to get GetConfig")
+		log.Error(err, "Failed to get CreateSubscription")
 		return r.ManageError(ctx, instance, err)
 	}
 
@@ -103,8 +104,8 @@ func (r *GetConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	return r.ManageSuccess(ctx, instance)
 }
 
-func (r *GetConfigReconciler) isInitialized(obj metav1.Object) bool {
-	_, ok := obj.(*netconfv1.GetConfig)
+func (r *CreateSubscriptionReconciler) isInitialized(obj metav1.Object) bool {
+	_, ok := obj.(*netconfv1.CreateSubscription)
 	if !ok {
 		return false
 	}
@@ -112,10 +113,10 @@ func (r *GetConfigReconciler) isInitialized(obj metav1.Object) bool {
 
 }
 
-func (r *GetConfigReconciler) isValid(obj metav1.Object) (bool, error) {
-	instance, ok := obj.(*netconfv1.GetConfig)
+func (r *CreateSubscriptionReconciler) isValid(obj metav1.Object) (bool, error) {
+	instance, ok := obj.(*netconfv1.CreateSubscription)
 	if !ok {
-		return false, errors.New("not an GetConfig object")
+		return false, fmt.Errorf("%s is not an CreateSubscription object", obj.GetName())
 	}
 
 	exists := CheckMountPointExists(
@@ -129,48 +130,52 @@ func (r *GetConfigReconciler) isValid(obj metav1.Object) (bool, error) {
 	return true, nil
 }
 
-func (r *GetConfigReconciler) manageOperatorLogic(obj *netconfv1.GetConfig, log logr.Logger) error {
-	log.Info(fmt.Sprintf("%s: Send GetConfig %s for %s datastore.", obj.Spec.MountPoint, obj.Name, obj.Spec.Target))
+func (r *CreateSubscriptionReconciler) manageOperatorLogic(obj *netconfv1.CreateSubscription, log logr.Logger) error {
+	identifier := obj.GetNamespacedName()
 
-	// TODO implement filtering
-	s := Sessions[obj.GetMountPointNamespacedName(obj.Spec.MountPoint)]
-	reply, err := s.SyncRPC(message.NewGetConfig(obj.Spec.Target, "", ""), obj.Spec.Timeout)
+	log.Info(fmt.Sprintf("%s: Create NETCONF subscription %s.", obj.Spec.MountPoint, obj.Name))
 
-	if err != nil || reply.Errors != nil {
-		log.Info(
-			fmt.Sprintf(
-				"%s: Failed to GetConfig for %s datastore %s.", obj.Spec.MountPoint, obj.Spec.Target, obj.Name,
-			),
+	callback := func(event netconf.Event) {
+		notification := event.Notification()
+		// sends a K8S event
+		r.recorder.Eventf(
+			obj, "Normal", fmt.Sprintf("NetconfNotification-%s", identifier), fmt.Sprintf("%s", notification.RawReply),
 		)
+	}
+
+	s := Sessions[obj.GetMountPointNamespacedName(obj.Spec.MountPoint)]
+	err := s.CreateNotificationStream(
+		obj.Spec.Timeout, obj.Spec.StopTime, obj.Spec.StartTime, obj.Spec.Stream, callback,
+	)
+	if err != nil {
 		obj.Status = "failed"
-		obj.RpcReply = reply.RawReply
 		return err
 	}
 
-	log.Info(fmt.Sprintf("%s: Successfully executed GetConfig operation %s.", obj.Spec.MountPoint, obj.Name))
-	obj.Status = "success"
-	obj.RpcReply = reply.Data
+	obj.Status = "subscribed"
 	return nil
 }
 
-func newGetConfigReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &GetConfigReconciler{
+func newCreateSubscriptionReconciler(mgr manager.Manager) reconcile.Reconciler {
+	return &CreateSubscriptionReconciler{
 		ReconcilerBase: util.NewReconcilerBase(
-			mgr.GetClient(), mgr.GetScheme(), mgr.GetConfig(), mgr.GetEventRecorderFor(getConfigControllerName),
+			mgr.GetClient(), mgr.GetScheme(), mgr.GetConfig(),
+			mgr.GetEventRecorderFor(createSubscriptionControllerName),
 			mgr.GetAPIReader(),
 		),
+		recorder: mgr.GetEventRecorderFor(createSubscriptionControllerName),
 	}
 }
 
-func addGetConfig(mgr manager.Manager, r reconcile.Reconciler) error {
+func addCreateSubscription(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Create a new controller
-	c, err := controller.New(getConfigControllerName, mgr, controller.Options{Reconciler: r})
+	c, err := controller.New(createSubscriptionControllerName, mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err
 	}
 
 	err = c.Watch(
-		&source.Kind{Type: &netconfv1.GetConfig{}}, &handler.EnqueueRequestForObject{},
+		&source.Kind{Type: &netconfv1.CreateSubscription{}}, &handler.EnqueueRequestForObject{},
 		util.ResourceGenerationOrFinalizerChangedPredicate{},
 	)
 	if err != nil {

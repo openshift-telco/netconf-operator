@@ -57,12 +57,22 @@ spec:
                 description: Identify the datastore against which the operation should
                   be performed. Default to `candidate`.
                 type: string
+              timeout:
+                default: 1
+                description: Timeout defines the timeout for the NETCONF transaction
+                  defaults to 1 seconds
+                format: int32
+                type: integer
             required:
             - mountPoint
             type: object
           status:
-            description: UnlockStatus defines the observed state of Unlock
             properties:
+              capabilities:
+                description: Provide the list of supported capabilities
+                items:
+                  type: string
+                type: array
               conditions:
                 items:
                   description: "Condition contains details for one aspect of the current
@@ -140,6 +150,9 @@ spec:
                 type: string
               status:
                 description: Either `success` or `failed`
+                type: string
+              subscriptionID:
+                description: In case of a notification, keep track of the subscription-id
                 type: string
             type: object
         type: object

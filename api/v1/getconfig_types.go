@@ -25,34 +25,13 @@ import (
 type GetConfigSpec struct {
 	// Defines the NETCONF session to use
 	MountPoint string `json:"mountPoint"`
+	// Timeout defines the timeout for the NETCONF transaction
+	// defaults to 1 seconds
+	// +kubebuilder:default:=1
+	Timeout int32 `json:"timeout,omitempty"`
 	// Identify the datastore against which the operation should be performed. Default to `running`.
 	// +kubebuilder:default:="running"
 	Target string `json:"target,omitempty"`
-}
-
-// GetConfigStatus defines the observed state of GetConfig
-type GetConfigStatus struct {
-	// +patchMergeKey=type
-	// +patchStrategy=merge
-	// +listType=map
-	// +listMapKey=type
-	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
-	// Either `success` or `failed`
-	Status string `json:"status,omitempty"`
-	// Provides the received RPC reply
-	RpcReply string `json:"rpcReply,omitempty"`
-}
-
-func (obj *GetConfig) GetConditions() []metav1.Condition {
-	return obj.Status.Conditions
-}
-
-func (obj *GetConfig) SetConditions(reconcileStatus []metav1.Condition) {
-	obj.Status.Conditions = reconcileStatus
-}
-
-func (obj *GetConfig) GetNamespacedName() string {
-	return types.NamespacedName{Namespace: obj.Namespace, Name: obj.Name}.String()
 }
 
 //+kubebuilder:object:root=true
@@ -63,8 +42,8 @@ type GetConfig struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   GetConfigSpec   `json:"spec,omitempty"`
-	Status GetConfigStatus `json:"status,omitempty"`
+	Spec      GetConfigSpec `json:"spec,omitempty"`
+	RPCStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -78,4 +57,12 @@ type GetConfigList struct {
 
 func init() {
 	SchemeBuilder.Register(&GetConfig{}, &GetConfigList{})
+}
+
+func (obj *GetConfig) GetMountPointNamespacedName(mountpoint string) string {
+	return types.NamespacedName{Namespace: obj.Namespace, Name: mountpoint}.String()
+}
+
+func (obj *GetConfig) GetNamespacedName() string {
+	return types.NamespacedName{Namespace: obj.Namespace, Name: obj.Name}.String()
 }

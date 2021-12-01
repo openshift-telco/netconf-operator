@@ -12,7 +12,6 @@ resources:
 - bases/netconf.adetalhouet.io_rpcs.yaml
 - bases/netconf.adetalhouet.io_establishsubscriptions.yaml
 - bases/netconf.adetalhouet.io_createsubscriptions.yaml
-- bases/netconf.adetalhouet.io_notifications.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:

@@ -16,8 +16,7 @@ This operator provides support for:
     - No support for notification filtering
 - Partially [RFC8641](https://datatracker.ietf.org/doc/html/rfc8641) and [RFC8639](https://datatracker.ietf.org/doc/html/rfc8639): **Subscription to YANG Notifications for Datastore Updates**
     - Support for `establish-subscription`
-    - No support for `delete-subscription`
-
+    - Support for `delete-subscription`
 
 The operator is built using the following [go-netconf](https://github.com/adetalhouet/go-netconf) client.
 
@@ -32,25 +31,31 @@ All the below supported NETCONF operations depends on a `MountPoint` session to 
 - `Commit`
 - `Lock`
 - `Unlock`
+- `CreateSubscription`
+- `EstablishSubscription`
+
+All the CRDs, beside `EstablishSubscrption`, has no effect when deleted.
 
 See the [examples](https://github.com/adetalhouet/netconf-operator/tree/main/examples) folder to understand how to use the CRD. Also, read the CRD spec to understand the requirements.
 
-The `Lock` CRD removes the lock on the datastore when deleted; so removal of a `Lock` CR acts like as an unlock.
+#### Sequence operations
+In order to sequence operations, the `EditConfig`, `Commit`, and `Unlock` CRDs provide to ability to define an operation it is depending on, using the `dependsOn` field. As such, one can achieve such flow: `Lock` --> `EditConfig` --> `Commit` --> `Unlock`.
 
-Finally, in order to sequence operations, the `EditConfig`, `Commit`, and `Unlock` CRDs provide to ability to define an operation it is depending on, using the `dependsOn` field. As such, one can achieve such flow: `Lock` --> `EditConfig` --> `Commit` --> `Unlock`.
+#### NETCONF notifications
 
-## Notification Usage
-
-The `Notification` CRD enables the creation of `create-subscription` and `establish-subscription` RPC. One `Notification` CR can provide multiple instead of each, enabling an easy way to setup telemetry. All the received notifications are translated to a Kubernetes Event, providing the received XML for further analysis.
-
-Here is an example, based on [this CR:](https://github.com/adetalhouet/netconf-operator/blob/main/examples/notifications/create-subscriptions.yaml)
-
+By registering to a notification stream, the operator received the `notification` and translate it to a Kubernetes event. This enables the consumption of the events by downstream systems for further processing.
 ![](https://raw.githubusercontent.com/adetalhouet/netconf-operator/main/docs/netconf-notification-example.png)
+
+
+##### Create subscription
+When using the `create-subscription` CRD, only one NETCONF notification stream can be registered per session. Deleting a `CreateSubscription` CR has no effect. In order to remove that subscription, the RFC5277 stipulates to close the NETCONF session.
+
+##### Establish subscription
+There are no restriction on the `EstablishSubscription` CRD. It is mostly a wrapper to help manage notification handling. One session can handle many instance of the CR as using subscription will be uniquely identifiable by its _subscription-id_. When deleting a CR, the operator will execute a `delete-subscription` with the _subscription-id_ defined for that subscription.
 
 ## TODO
 - enable `commit` through `edit-config` directly
 - implement proper CRD cleanup sequence and dependency
-- add support for `delete-subscription`
 
 ## Dev
 
@@ -87,7 +92,8 @@ operator-sdk create api --resource=true --controller=true --group netconf --vers
 operator-sdk create api --resource=true --controller=true --group netconf --version v1 --kind Unlock
 operator-sdk create api --resource=true --controller=true --group netconf --version v1 --kind RPC
 operator-sdk create api --resource=true --controller=true --group netconf --version v1 --kind RPC
-operator-sdk create api --resource=true --controller=true --group netconf --version v1 --kind Notification
+operator-sdk create api --resource=true --controller=true --group netconf --version v1 --kind CreateSubscription
+operator-sdk create api --resource=true --controller=true --group netconf --version v1 --kind EstablishSubscription
 ~~~
 
 

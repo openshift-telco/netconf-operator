@@ -18,7 +18,6 @@ package controllers
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/adetalhouet/go-netconf/netconf"
 	"github.com/adetalhouet/go-netconf/netconf/message"
@@ -91,7 +90,7 @@ func (r *MountPointReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	// Managing CR Finalization
 	if util.IsBeingDeleted(instance) {
-		if !util.HasFinalizer(instance, finalizer) {
+		if !util.HasFinalizer(instance, mountpointFinalizer) {
 			return reconcile.Result{}, nil
 		}
 		err := r.manageCleanUpLogic(instance)
@@ -100,17 +99,12 @@ func (r *MountPointReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			log.Error(err, "unable to delete instance", "instance", instance)
 			return r.ManageError(ctx, instance, err)
 		}
-		util.RemoveFinalizer(instance, finalizer)
+		util.RemoveFinalizer(instance, mountpointFinalizer)
 		err = r.GetClient().Update(context.Background(), instance)
 		if err != nil {
 			log.Error(err, "unable to update instance", "instance", instance)
 			return r.ManageError(ctx, instance, err)
 		}
-
-		// remove cached session from inventory
-		delete(Sessions, instance.GetNamespacedName())
-
-		return reconcile.Result{}, nil
 	}
 
 	// Managing MountPoint Logic
@@ -123,14 +117,14 @@ func (r *MountPointReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 }
 
 func (r *MountPointReconciler) isInitialized(obj metav1.Object) bool {
-	mountPoint, ok := obj.(*netconfv1.MountPoint)
+	instance, ok := obj.(*netconfv1.MountPoint)
 	if !ok {
 		return false
 	}
-	if util.HasFinalizer(mountPoint, finalizer) {
+	if util.HasFinalizer(instance, mountpointFinalizer) {
 		return true
 	}
-	util.AddFinalizer(mountPoint, finalizer)
+	util.AddFinalizer(instance, mountpointFinalizer)
 	return false
 
 }
@@ -138,7 +132,7 @@ func (r *MountPointReconciler) isInitialized(obj metav1.Object) bool {
 func (r *MountPointReconciler) isValid(obj metav1.Object) (bool, error) {
 	_, ok := obj.(*netconfv1.MountPoint)
 	if !ok {
-		return false, errors.New("not an MountPoint object")
+		return false, fmt.Errorf("%s is not an MountPoint object", obj.GetName())
 	}
 
 	return true, nil
@@ -147,21 +141,28 @@ func (r *MountPointReconciler) isValid(obj metav1.Object) (bool, error) {
 func (r *MountPointReconciler) manageCleanUpLogic(mountPoint *netconfv1.MountPoint) error {
 	s := Sessions[mountPoint.GetNamespacedName()]
 	// Close NETCONF session. If fails, kill the session.
-	rpc, err := s.ExecRPC(message.NewCloseSession())
+	rpc, err := s.SyncRPC(message.NewCloseSession(), mountPoint.Spec.Timeout)
 	if err != nil || !rpc.Ok {
 		// If there is a failure here, there is nothing we can do.
-		_, _ = s.ExecRPC(message.NewKillSession(string(rune(s.SessionID))))
-		return err
+		_, _ = s.SyncRPC(message.NewKillSession(string(rune(s.SessionID))), mountPoint.Spec.Timeout)
+		return nil
 	}
+
+	// remove cached session from inventory
+	delete(Sessions, mountPoint.GetNamespacedName())
+
+	// blindly remove stream handler
+	s.Listener.Remove(message.NetconfNotificationStreamHandler)
+
 	return s.Close()
 }
 
-func (r *MountPointReconciler) manageOperatorLogic(mountPoint *netconfv1.MountPoint, log logr.Logger) error {
-	log.Info(fmt.Sprintf("%s: Create Netconf connection to %s.", mountPoint.Name, mountPoint.Spec.Target))
+func (r *MountPointReconciler) manageOperatorLogic(obj *netconfv1.MountPoint, log logr.Logger) error {
+	log.Info(fmt.Sprintf("%s: Create Netconf connection to %s.", obj.Name, obj.Spec.Target))
 
 	sshConfig := &ssh.ClientConfig{
-		User:            mountPoint.Spec.Username,
-		Auth:            []ssh.AuthMethod{ssh.Password(mountPoint.Spec.Username)},
+		User:            obj.Spec.Username,
+		Auth:            []ssh.AuthMethod{ssh.Password(obj.Spec.Username)},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
@@ -169,38 +170,41 @@ func (r *MountPointReconciler) manageOperatorLogic(mountPoint *netconfv1.MountPo
 	var err error
 
 	// Establish SSH session
-	if mountPoint.Spec.Timeout == 0 {
-		session, err = netconf.DialSSH(mountPoint.Spec.Target, sshConfig)
+	if obj.Spec.Timeout == 0 {
+		session, err = netconf.DialSSH(obj.Spec.Target, sshConfig)
 	} else {
-		timeout := time.Duration(mountPoint.Spec.Timeout) * time.Second
-		session, err = netconf.DialSSHTimeout(mountPoint.Spec.Target, sshConfig, timeout)
+		timeout := time.Duration(obj.Spec.Timeout) * time.Second
+		session, err = netconf.DialSSHTimeout(obj.Spec.Target, sshConfig, timeout)
 	}
 	if err != nil {
-		log.Error(err, fmt.Sprintf("%s: Failed to established SSH connection to %s.",
-			mountPoint.Name, mountPoint.Spec.Target))
-		mountPoint.Status.Status = "failed"
+		log.Error(
+			err, fmt.Sprintf(
+				"%s: Failed to established SSH connection to %s.",
+				obj.Name, obj.Spec.Target,
+			),
+		)
+		obj.Status = "failed"
 		return err
 	}
 
 	// Send our hello using default capabilities + additional capabilities, as defined in the CR.
 	capabilities := netconf.DefaultCapabilities
-	for _, capability := range mountPoint.Spec.AdditionalCapabilities {
+	for _, capability := range obj.Spec.AdditionalCapabilities {
 		capabilities = append(capabilities, capability)
 	}
 
 	err = session.SendHello(&message.Hello{Capabilities: capabilities})
 	if err != nil {
-		log.Error(err, fmt.Sprintf("%s: Failed to send hello-message", mountPoint.Name))
-		mountPoint.Status.Status = "failed"
+		log.Error(err, fmt.Sprintf("%s: Failed to send hello-message", obj.Name))
+		obj.Status = "failed"
 		return err
 	}
 
-	Sessions[mountPoint.GetNamespacedName()] = session
+	obj.Status = "connected"
+	obj.Capabilities = session.Capabilities
 
-	log.Info(fmt.Sprintf("%s: Successfully connected.", mountPoint.Name))
-
-	mountPoint.Status.Status = "connected"
-	mountPoint.Status.Capabilities = session.Capabilities
+	Sessions[obj.GetNamespacedName()] = session
+	log.Info(fmt.Sprintf("%s: Successfully connected.", obj.Name))
 
 	return nil
 }

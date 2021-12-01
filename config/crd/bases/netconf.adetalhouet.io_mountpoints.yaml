@@ -55,7 +55,7 @@ spec:
                 description: Whether to apply timeout while attempting the connection,
                   expressed in second. By default, set to `15` seconds. Put `0` for
                   no timeout.
-                format: int64
+                format: int32
                 type: integer
               username:
                 description: The username to use to authenticate
@@ -66,7 +66,6 @@ spec:
             - username
             type: object
           status:
-            description: MountPointStatus defines the observed state of MountPoint
             properties:
               capabilities:
                 description: Provide the list of supported capabilities
@@ -145,8 +144,14 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              rpcReply:
+                description: Provides the received RPC reply
+                type: string
               status:
-                description: Either `connected` or `failed`
+                description: Either `success` or `failed`
+                type: string
+              subscriptionID:
+                description: In case of a notification, keep track of the subscription-id
                 type: string
             type: object
         type: object

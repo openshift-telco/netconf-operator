@@ -23,7 +23,6 @@ import (
 
 // MountPointSpec defines the desired state of MountPoint
 type MountPointSpec struct {
-
 	// Represents the Netconf server to establish a session with.
 	// By default, port `830` is used. If you need to use another port,
 	// provide the target in the following format: `<host>:<port>`.
@@ -35,34 +34,9 @@ type MountPointSpec struct {
 	// Whether to apply timeout while attempting the connection, expressed in second.
 	// By default, set to `15` seconds. Put `0` for no timeout.
 	// +kubebuilder:default:=15
-	Timeout int64 `json:"timeout,omitempty"`
+	Timeout int32 `json:"timeout,omitempty"`
 	// This is to instruct the NETCONF client to advertise additional capabilities
 	AdditionalCapabilities []string `json:"additionalCapabilities,omitempty"`
-}
-
-// MountPointStatus defines the observed state of MountPoint
-type MountPointStatus struct {
-	// +patchMergeKey=type
-	// +patchStrategy=merge
-	// +listType=map
-	// +listMapKey=type
-	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
-	// Either `connected` or `failed`
-	Status string `json:"status,omitempty"`
-	// Provide the list of supported capabilities
-	Capabilities []string `json:"capabilities,omitempty"`
-}
-
-func (obj *MountPoint) GetConditions() []metav1.Condition {
-	return obj.Status.Conditions
-}
-
-func (obj *MountPoint) SetConditions(reconcileStatus []metav1.Condition) {
-	obj.Status.Conditions = reconcileStatus
-}
-
-func (obj *MountPoint) GetNamespacedName() string {
-	return types.NamespacedName{Namespace: obj.Namespace, Name: obj.Name}.String()
 }
 
 //+kubebuilder:object:root=true
@@ -73,8 +47,8 @@ type MountPoint struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   MountPointSpec   `json:"spec,omitempty"`
-	Status MountPointStatus `json:"status,omitempty"`
+	Spec      MountPointSpec `json:"spec,omitempty"`
+	RPCStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -88,4 +62,12 @@ type MountPointList struct {
 
 func init() {
 	SchemeBuilder.Register(&MountPoint{}, &MountPointList{})
+}
+
+func (obj *MountPoint) GetMountPointNamespacedName(mountpoint string) string {
+	return types.NamespacedName{Namespace: obj.Namespace, Name: mountpoint}.String()
+}
+
+func (obj *MountPoint) GetNamespacedName() string {
+	return types.NamespacedName{Namespace: obj.Namespace, Name: obj.Name}.String()
 }

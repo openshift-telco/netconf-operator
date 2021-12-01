@@ -18,7 +18,6 @@ package controllers
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/adetalhouet/go-netconf/netconf/message"
 	"github.com/go-logr/logr"
@@ -32,6 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+	"time"
 
 	"github.com/redhat-cop/operator-utils/pkg/util"
 
@@ -75,7 +75,7 @@ func (r *UnlockReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	// Managing CR validation
 	if ok, err := r.isValid(instance); !ok {
-		return r.ManageError(ctx, instance, err)
+		return r.ManageErrorWithRequeue(ctx, instance, err, 2*time.Second)
 	}
 
 	// Managing CR Initialization
@@ -90,25 +90,9 @@ func (r *UnlockReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	// Managing CR Finalization
 	if util.IsBeingDeleted(instance) {
-		if !util.HasFinalizer(instance, finalizer) {
-			return reconcile.Result{}, nil
-		}
-		err := r.manageCleanUpLogic(instance)
-
-		if err != nil {
-			log.Error(err, "unable to delete instance", "instance", instance)
-			return r.ManageError(ctx, instance, err)
-		}
-		util.RemoveFinalizer(instance, finalizer)
-		err = r.GetClient().Update(context.Background(), instance)
-		if err != nil {
-			log.Error(err, "unable to update instance", "instance", instance)
-			return r.ManageError(ctx, instance, err)
-		}
 		return reconcile.Result{}, nil
 	}
 
-	// Managing MountPoint Logic
 	err = r.manageOperatorLogic(instance, log)
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
@@ -118,41 +102,37 @@ func (r *UnlockReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 }
 
 func (r *UnlockReconciler) isInitialized(obj metav1.Object) bool {
-	mountPoint, ok := obj.(*netconfv1.Unlock)
+	_, ok := obj.(*netconfv1.Unlock)
 	if !ok {
 		return false
 	}
-	if util.HasFinalizer(mountPoint, finalizer) {
-		return true
-	}
-	util.AddFinalizer(mountPoint, finalizer)
-	return false
+	return true
 
 }
 
 func (r *UnlockReconciler) isValid(obj metav1.Object) (bool, error) {
 	instance, ok := obj.(*netconfv1.Unlock)
 	if !ok {
-		return false, errors.New("not an Unlock object")
+		return false, fmt.Errorf("%s is not an Unlock object", obj.GetName())
 	}
 
-	exists := CheckMountPointExists(r.ReconcilerBase,
-		types.NamespacedName{Namespace: instance.Namespace, Name: instance.Spec.MountPoint})
+	exists := CheckMountPointExists(
+		r.ReconcilerBase,
+		types.NamespacedName{Namespace: instance.Namespace, Name: instance.Spec.MountPoint},
+	)
 	if !exists {
 		return false, fmt.Errorf("MountPoint %s doesn't exists", instance.Spec.MountPoint)
 	}
 
 	return true, nil
 }
-func (r *UnlockReconciler) manageCleanUpLogic(unlock *netconfv1.Unlock) error {
-
-	// TODO NOOP
-
-	return nil
-}
 
 func (r *UnlockReconciler) manageOperatorLogic(unlock *netconfv1.Unlock, log logr.Logger) error {
-	log.Info(fmt.Sprintf("%s: Send Unlock on %s datastore.", unlock.Spec.MountPoint, unlock.Spec.Target))
+	log.Info(
+		fmt.Sprintf(
+			"%s: Send Unlock %s on %s datastore.", unlock.Spec.MountPoint, unlock.Name, unlock.Spec.Target,
+		),
+	)
 
 	if !unlock.Spec.DependsOn.IsNil() {
 		err := validateDependency(r.ReconcilerBase, unlock.Namespace, unlock.Spec.DependsOn)
@@ -161,19 +141,19 @@ func (r *UnlockReconciler) manageOperatorLogic(unlock *netconfv1.Unlock, log log
 			return err
 		}
 	}
+	s := Sessions[unlock.GetMountPointNamespacedName(unlock.Spec.MountPoint)]
+	reply, err := s.SyncRPC(message.NewUnlock(unlock.Spec.Target), unlock.Spec.Timeout)
 
-	s := Sessions[types.NamespacedName{Namespace: unlock.Namespace, Name: unlock.Spec.MountPoint}.String()]
-	reply, err := s.ExecRPC(message.NewUnlock(unlock.Spec.Target))
-	if err != nil {
-		log.Error(err, fmt.Sprintf("%s: Failed to Unlock.", unlock.Spec.MountPoint))
-		unlock.Status.Status = "failed"
-		unlock.Status.RpcReply = reply.RawReply
+	if err != nil || reply.Errors != nil {
+		log.Info(fmt.Sprintf("%s: Failed to Unlock %s.", unlock.Spec.MountPoint, unlock.Name))
+		unlock.Status = "failed"
+		unlock.RpcReply = reply.RawReply
 		return err
 	}
-	log.Info(fmt.Sprintf("%s: Successfully executed unlock operation.", unlock.Spec.MountPoint))
 
-	unlock.Status.Status = "success"
-	unlock.Status.RpcReply = reply.Data
+	log.Info(fmt.Sprintf("%s: Successfully executed Unlock %s operation.", unlock.Spec.MountPoint, unlock.Name))
+	unlock.Status = "success"
+	unlock.RpcReply = reply.Data
 
 	return nil
 }

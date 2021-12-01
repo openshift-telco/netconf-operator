@@ -21,48 +21,47 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-// LockSpec defines the desired state of Lock
-type LockSpec struct {
+// EstablishSubscriptionSpec defines the desired state of EstablishSubscription
+type EstablishSubscriptionSpec struct {
 	// Defines the NETCONF session to use
 	MountPoint string `json:"mountPoint"`
 	// Timeout defines the timeout for the NETCONF transaction
 	// defaults to 1 seconds
 	// +kubebuilder:default:=1
 	Timeout int32 `json:"timeout,omitempty"`
-	// Identify the datastore against which the operation should be performed. Default to `candidate`.
-	// +kubebuilder:default:="candidate"
-	Target string `json:"target,omitempty"`
+	// Defines the `<establish-subscription` RPC to sent
+	XML string `json:"xml"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// Lock is the Schema for the locks API
-type Lock struct {
+// EstablishSubscription is the Schema for the establishsubscriptions API
+type EstablishSubscription struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec      LockSpec `json:"spec,omitempty"`
+	Spec      EstablishSubscriptionSpec `json:"spec,omitempty"`
 	RPCStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// LockList contains a list of Lock
-type LockList struct {
+// EstablishSubscriptionList contains a list of EstablishSubscription
+type EstablishSubscriptionList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Lock `json:"items"`
+	Items           []EstablishSubscription `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Lock{}, &LockList{})
+	SchemeBuilder.Register(&EstablishSubscription{}, &EstablishSubscriptionList{})
 }
 
-func (obj *Lock) GetMountPointNamespacedName(mountpoint string) string {
+func (obj *EstablishSubscription) GetMountPointNamespacedName(mountpoint string) string {
 	return types.NamespacedName{Namespace: obj.Namespace, Name: mountpoint}.String()
 }
 
-func (obj *Lock) GetNamespacedName() string {
+func (obj *EstablishSubscription) GetNamespacedName() string {
 	return types.NamespacedName{Namespace: obj.Namespace, Name: obj.Name}.String()
 }

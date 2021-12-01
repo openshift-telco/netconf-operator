@@ -25,33 +25,12 @@ import (
 type CommitSpec struct {
 	// Defines the NETCONF session to use
 	MountPoint string `json:"mountPoint"`
+	// Timeout defines the timeout for the NETCONF transaction
+	// defaults to 1 seconds
+	// +kubebuilder:default:=1
+	Timeout int32 `json:"timeout,omitempty"`
 	// If this Commit operation should occur after another operation, specify the other operation here.
 	DependsOn DependsOn `json:"dependsOn,omitempty"`
-}
-
-// CommitStatus defines the observed state of Commit
-type CommitStatus struct {
-	// +patchMergeKey=type
-	// +patchStrategy=merge
-	// +listType=map
-	// +listMapKey=type
-	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
-	// Either `success` or `failed`
-	Status string `json:"status,omitempty"`
-	// Provides the received RPC reply
-	RpcReply string `json:"rpcReply,omitempty"`
-}
-
-func (obj *Commit) GetConditions() []metav1.Condition {
-	return obj.Status.Conditions
-}
-
-func (obj *Commit) SetConditions(reconcileStatus []metav1.Condition) {
-	obj.Status.Conditions = reconcileStatus
-}
-
-func (obj *Commit) GetNamespacedName() string {
-	return types.NamespacedName{Namespace: obj.Namespace, Name: obj.Name}.String()
 }
 
 //+kubebuilder:object:root=true
@@ -62,8 +41,8 @@ type Commit struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   CommitSpec   `json:"spec,omitempty"`
-	Status CommitStatus `json:"status,omitempty"`
+	Spec      CommitSpec `json:"spec,omitempty"`
+	RPCStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -77,4 +56,12 @@ type CommitList struct {
 
 func init() {
 	SchemeBuilder.Register(&Commit{}, &CommitList{})
+}
+
+func (obj *Commit) GetMountPointNamespacedName(mountpoint string) string {
+	return types.NamespacedName{Namespace: obj.Namespace, Name: mountpoint}.String()
+}
+
+func (obj *Commit) GetNamespacedName() string {
+	return types.NamespacedName{Namespace: obj.Namespace, Name: obj.Name}.String()
 }

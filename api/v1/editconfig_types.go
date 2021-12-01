@@ -25,6 +25,10 @@ import (
 type EditConfigSpec struct {
 	// Defines the NETCONF session to use
 	MountPoint string `json:"mountPoint"`
+	// Timeout defines the timeout for the NETCONF transaction
+	// defaults to 1 seconds
+	// +kubebuilder:default:=1
+	Timeout int32 `json:"timeout,omitempty"`
 	// Defined the operation to perform. Default to `merge`.
 	//See https://datatracker.ietf.org/doc/html/rfc6241#section-7.2 for supported operations.
 	// +kubebuilder:default:="merge"
@@ -36,31 +40,15 @@ type EditConfigSpec struct {
 	XML string `json:"xml"`
 	// If this EditConfig operation should occur after another operation, specify the other operation here.
 	DependsOn DependsOn `json:"dependsOn,omitempty"`
-}
-
-// EditConfigStatus defines the observed state of EditConfig
-type EditConfigStatus struct {
-	// +patchMergeKey=type
-	// +patchStrategy=merge
-	// +listType=map
-	// +listMapKey=type
-	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
-	// Either `success` or `failed`
-	Status string `json:"status,omitempty"`
-	// Provides the received RPC reply
-	RpcReply string `json:"rpcReply,omitempty"`
-}
-
-func (obj *EditConfig) GetConditions() []metav1.Condition {
-	return obj.Status.Conditions
-}
-
-func (obj *EditConfig) SetConditions(reconcileStatus []metav1.Condition) {
-	obj.Status.Conditions = reconcileStatus
-}
-
-func (obj *EditConfig) GetNamespacedName() string {
-	return types.NamespacedName{Namespace: obj.Namespace, Name: obj.Name}.String()
+	// Whether to lock the specified datastore before doing the edit-config
+	// +kubebuilder:default:=false
+	Lock bool `json:"lock,omitempty"`
+	// Whether to commit the changes.
+	// +kubebuilder:default:=false
+	Commit bool `json:"commit,omitempty"`
+	// Whether to unlock the specified datastore before doing the edit-config
+	// +kubebuilder:default:=false
+	Unlock bool `json:"unlock,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -71,8 +59,8 @@ type EditConfig struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   EditConfigSpec   `json:"spec,omitempty"`
-	Status EditConfigStatus `json:"status,omitempty"`
+	Spec      EditConfigSpec `json:"spec,omitempty"`
+	RPCStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -86,4 +74,12 @@ type EditConfigList struct {
 
 func init() {
 	SchemeBuilder.Register(&EditConfig{}, &EditConfigList{})
+}
+
+func (obj *EditConfig) GetMountPointNamespacedName(mountpoint string) string {
+	return types.NamespacedName{Namespace: obj.Namespace, Name: mountpoint}.String()
+}
+
+func (obj *EditConfig) GetNamespacedName() string {
+	return types.NamespacedName{Namespace: obj.Namespace, Name: obj.Name}.String()
 }

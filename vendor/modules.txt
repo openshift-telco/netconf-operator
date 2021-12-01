@@ -25,7 +25,7 @@ github.com/Masterminds/sprig/v3
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 github.com/PuerkitoBio/urlesc
-# github.com/adetalhouet/go-netconf v1.1.7
+# github.com/adetalhouet/go-netconf v1.2.2
 ## explicit
 github.com/adetalhouet/go-netconf/netconf
 github.com/adetalhouet/go-netconf/netconf/message
@@ -54,9 +54,6 @@ github.com/go-openapi/jsonreference
 github.com/go-openapi/spec
 # github.com/go-openapi/swag v0.19.5
 github.com/go-openapi/swag
-# github.com/go-xmlfmt/xmlfmt v0.0.0-20191208150333-d5b6f63a941b
-## explicit
-github.com/go-xmlfmt/xmlfmt
 # github.com/gogo/protobuf v1.3.1
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys

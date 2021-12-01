@@ -42,6 +42,32 @@ rules:
 - apiGroups:
   - netconf.adetalhouet.io
   resources:
+  - createsubscriptions
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - netconf.adetalhouet.io
+  resources:
+  - createsubscriptions/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - netconf.adetalhouet.io
+  resources:
+  - createsubscriptions/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - netconf.adetalhouet.io
+  resources:
   - editconfigs
   verbs:
   - create
@@ -65,6 +91,44 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - netconf.adetalhouet.io
+  resources:
+  - establishsubscriptions
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - netconf.adetalhouet.io
+  resources:
+  - establishsubscriptions/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - netconf.adetalhouet.io
+  resources:
+  - establishsubscriptions/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - netconf.adetalhouet.io
+  resources:
+  - events
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
   - netconf.adetalhouet.io
   resources:
@@ -165,32 +229,6 @@ rules:
   - netconf.adetalhouet.io
   resources:
   - mountpoints/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - netconf.adetalhouet.io
-  resources:
-  - notifications
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - netconf.adetalhouet.io
-  resources:
-  - notifications/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - netconf.adetalhouet.io
-  resources:
-  - notifications/status
   verbs:
   - get
   - patch

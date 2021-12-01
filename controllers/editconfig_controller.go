@@ -32,6 +32,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+	"time"
 
 	"github.com/redhat-cop/operator-utils/pkg/util"
 
@@ -75,7 +76,7 @@ func (r *EditConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	// Managing CR validation
 	if ok, err := r.isValid(instance); !ok {
-		return r.ManageError(ctx, instance, err)
+		return r.ManageErrorWithRequeue(ctx, instance, err, 2*time.Second)
 	}
 
 	// Managing CR Initialization
@@ -90,25 +91,9 @@ func (r *EditConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	// Managing CR Finalization
 	if util.IsBeingDeleted(instance) {
-		if !util.HasFinalizer(instance, finalizer) {
-			return reconcile.Result{}, nil
-		}
-		err := r.manageCleanUpLogic(instance)
-
-		if err != nil {
-			log.Error(err, "unable to delete instance", "instance", instance)
-			return r.ManageError(ctx, instance, err)
-		}
-		util.RemoveFinalizer(instance, finalizer)
-		err = r.GetClient().Update(context.Background(), instance)
-		if err != nil {
-			log.Error(err, "unable to update instance", "instance", instance)
-			return r.ManageError(ctx, instance, err)
-		}
 		return reconcile.Result{}, nil
 	}
 
-	// Managing MountPoint Logic
 	err = r.manageOperatorLogic(instance, log)
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
@@ -118,15 +103,11 @@ func (r *EditConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 }
 
 func (r *EditConfigReconciler) isInitialized(obj metav1.Object) bool {
-	mountPoint, ok := obj.(*netconfv1.EditConfig)
+	_, ok := obj.(*netconfv1.EditConfig)
 	if !ok {
 		return false
 	}
-	if util.HasFinalizer(mountPoint, finalizer) {
-		return true
-	}
-	util.AddFinalizer(mountPoint, finalizer)
-	return false
+	return true
 
 }
 
@@ -136,45 +117,85 @@ func (r *EditConfigReconciler) isValid(obj metav1.Object) (bool, error) {
 		return false, errors.New("not an EditConfig object")
 	}
 
-	exists := CheckMountPointExists(r.ReconcilerBase,
-		types.NamespacedName{Namespace: instance.Namespace, Name: instance.Spec.MountPoint})
+	exists := CheckMountPointExists(
+		r.ReconcilerBase,
+		types.NamespacedName{Namespace: instance.Namespace, Name: instance.Spec.MountPoint},
+	)
 	if !exists {
-		return false, fmt.Errorf("MountPoint %s doesn't exists", instance.Spec.MountPoint)
+		return false, errors.New(fmt.Sprintf("MountPoint %s doesn't exists", instance.Spec.MountPoint))
 	}
 
 	return true, nil
 }
 
-func (r *EditConfigReconciler) manageCleanUpLogic(editConfig *netconfv1.EditConfig) error {
-	// TODO NOOP
-	return nil
-}
+func (r *EditConfigReconciler) manageOperatorLogic(obj *netconfv1.EditConfig, log logr.Logger) error {
+	log.Info(
+		fmt.Sprintf(
+			"%s: EditConfig for %s datastore with %s operation.", obj.Spec.MountPoint,
+			obj.Spec.Target, obj.Spec.Operation,
+		),
+	)
 
-func (r *EditConfigReconciler) manageOperatorLogic(editConfig *netconfv1.EditConfig, log logr.Logger) error {
-	log.Info(fmt.Sprintf("%s: EditConfig for %s datastore with %s operation.", editConfig.Spec.MountPoint,
-		editConfig.Spec.Target, editConfig.Spec.Operation))
-
-	if !editConfig.Spec.DependsOn.IsNil() {
-		err := validateDependency(r.ReconcilerBase, editConfig.Namespace, editConfig.Spec.DependsOn)
+	if !obj.Spec.DependsOn.IsNil() {
+		err := validateDependency(r.ReconcilerBase, obj.Namespace, obj.Spec.DependsOn)
 		if err != nil {
 			log.Error(err, "Failed to validate dependency.")
 			return err
 		}
 	}
 
-	s := Sessions[types.NamespacedName{Namespace: editConfig.Namespace, Name: editConfig.Spec.MountPoint}.String()]
-	reply, err := s.ExecRPC(message.NewEditConfig(editConfig.Spec.Target, editConfig.Spec.Operation, editConfig.Spec.XML))
-	if err != nil {
-		log.Error(err, "%s: Failed to EditConfig.", editConfig.Spec.MountPoint)
-		editConfig.Status.Status = "failed"
-		editConfig.Status.RpcReply = reply.RawReply
+	s := Sessions[obj.GetMountPointNamespacedName(obj.Spec.MountPoint)]
+
+	if obj.Spec.Lock {
+		reply, err := s.SyncRPC(message.NewLock(obj.Spec.Target), obj.Spec.Timeout)
+		if reply == nil {
+			log.Info(
+				fmt.Sprintf(
+					"%s: Failed to lock datastore %s for EditConfig %s", obj.Spec.MountPoint, obj.Spec.Target, obj.Name,
+				),
+			)
+			obj.Status = "failed"
+			obj.RpcReply = reply.RawReply
+			return err
+		}
+	}
+
+	reply, err := s.SyncRPC(message.NewEditConfig(obj.Spec.Target, obj.Spec.Operation, obj.Spec.XML), obj.Spec.Timeout)
+	if reply == nil {
+		log.Info(fmt.Sprintf("%s: Failed to perform EditConfig %s.", obj.Spec.MountPoint, obj.Name))
+		obj.Status = "failed"
+		obj.RpcReply = reply.RawReply
 		return err
 	}
-	log.Info(fmt.Sprintf("%s: Successfully executed edit-config operation.", editConfig.Spec.MountPoint))
 
-	editConfig.Status.Status = "success"
-	editConfig.Status.RpcReply = reply.Data
+	if obj.Spec.Commit {
+		reply, err := s.SyncRPC(message.NewCommit(), obj.Spec.Timeout)
+		if reply == nil {
+			log.Info(fmt.Sprintf("%s: Failed to commit for EditConfig %s", obj.Spec.MountPoint, obj.Name))
+			obj.Status = "failed"
+			obj.RpcReply = reply.RawReply
+			return err
+		}
+	}
 
+	if obj.Spec.Unlock {
+		reply, err := s.SyncRPC(message.NewUnlock(obj.Spec.Target), obj.Spec.Timeout)
+		if reply == nil {
+			log.Info(
+				fmt.Sprintf(
+					"%s: Failed to unlock datastore %s for EditConfig %s", obj.Spec.MountPoint, obj.Spec.Target,
+					obj.Name,
+				),
+			)
+			obj.Status = "failed"
+			obj.RpcReply = reply.RawReply
+			return err
+		}
+	}
+
+	log.Info(fmt.Sprintf("%s: Successfully executed EditConfig %s operation.", obj.Spec.MountPoint, obj.Name))
+	obj.Status = "success"
+	obj.RpcReply = reply.Data
 	return nil
 }
 

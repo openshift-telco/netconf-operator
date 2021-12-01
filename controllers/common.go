@@ -20,11 +20,13 @@ const editConfigControllerName = "EditConfig_crd"
 const lockControllerName = "Lock_crd"
 const unlockControllerName = "Unlock_crd"
 const rpcControllerName = "RPC_crd"
-const notificationControllerName = "Notification_crds"
+const createSubscriptionControllerName = "CreateSubscription_crd"
 const establishSubscriptionControllerName = "EstablishSubscription_crd"
-const finalizer = "io.adetalhouet.netconf.finalizer"
 
-// Sessions hold the active SSH session to Netconf servers.
+const mountpointFinalizer = "io.adetalhouet.netconf.mountpoint.finalizer"
+const establishSubscriptionFinalizer = "io.adetalhouet.netconf.establishsubscription.finalizer"
+
+// Sessions hold the active SSH session to NETCONF servers.
 // The key is the NamespacedName of the MountPoint object referred in the CR
 var Sessions = make(map[string]*netconf.Session)
 
@@ -79,13 +81,13 @@ func validateDependency(r util.ReconcilerBase, namespace string, dep netconfv1.D
 	switch dep.Kind {
 	case "Commit":
 		i, _ := instance.(*netconfv1.Commit)
-		return validateStatus(i.Status.Status, dep.Name, namespace)
+		return validateStatus(i.Status, dep.Name, namespace)
 	case "EditConfig":
 		i, _ := instance.(*netconfv1.EditConfig)
-		return validateStatus(i.Status.Status, dep.Name, namespace)
+		return validateStatus(i.Status, dep.Name, namespace)
 	case "Lock":
 		i, _ := instance.(*netconfv1.Lock)
-		return validateStatus(i.Status.Status, dep.Name, namespace)
+		return validateStatus(i.Status, dep.Name, namespace)
 	}
 
 	return nil

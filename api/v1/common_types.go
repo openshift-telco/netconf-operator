@@ -1,5 +1,9 @@
 package v1
 
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
 // DependsOn allows to specify a dependency for the operation to execute.
 //If such dependency is not met, and/or if the underlying dependency isn't
 //reporting success, the operation will fail.
@@ -12,4 +16,28 @@ type DependsOn struct {
 
 func (d *DependsOn) IsNil() bool {
 	return len(d.Kind) == 0 || len(d.Name) == 0
+}
+
+type RPCStatus struct {
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	// +listType=map
+	// +listMapKey=type
+	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
+	// Either `success` or `failed`
+	Status string `json:"status,omitempty"`
+	// Provides the received RPC reply
+	RpcReply string `json:"rpcReply,omitempty"`
+	// Provide the list of supported capabilities
+	Capabilities []string `json:"capabilities,omitempty"`
+	// In case of a notification, keep track of the subscription-id
+	SubscriptionID string `json:"subscriptionID,omitempty"`
+}
+
+func (obj *RPCStatus) GetConditions() []metav1.Condition {
+	return obj.Conditions
+}
+
+func (obj *RPCStatus) SetConditions(reconcileStatus []metav1.Condition) {
+	obj.Conditions = reconcileStatus
 }

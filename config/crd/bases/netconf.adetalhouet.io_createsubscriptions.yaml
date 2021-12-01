@@ -47,16 +47,24 @@ spec:
                 description: Defines the time when to stop listen to changes.
                 type: string
               stream:
-                default: NETCONF
-                description: Defines the stream to subscribe to. Defaults to NETCONF
-                  stream.
+                description: Defines the stream to subscribe to
                 type: string
+              timeout:
+                default: 1
+                description: Timeout defines the timeout for the NETCONF transaction
+                  defaults to 1 seconds
+                format: int32
+                type: integer
             required:
             - mountPoint
             type: object
           status:
-            description: CreateSubscriptionStatus defines the observed state of CreateSubscription
             properties:
+              capabilities:
+                description: Provide the list of supported capabilities
+                items:
+                  type: string
+                type: array
               conditions:
                 items:
                   description: "Condition contains details for one aspect of the current
@@ -134,6 +142,9 @@ spec:
                 type: string
               status:
                 description: Either `success` or `failed`
+                type: string
+              subscriptionID:
+                description: In case of a notification, keep track of the subscription-id
                 type: string
             type: object
         type: object

@@ -18,7 +18,6 @@ package controllers
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/adetalhouet/go-netconf/netconf/message"
 	"github.com/go-logr/logr"
@@ -32,6 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+	"time"
 
 	"github.com/redhat-cop/operator-utils/pkg/util"
 
@@ -41,6 +41,7 @@ import (
 //+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=gets,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=gets/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=gets/finalizers,verbs=update
+//+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=events,verbs=get;list;watch;create;update;patch;delete
 
 // GetReconciler reconciles a Get object
 type GetReconciler struct {
@@ -75,7 +76,7 @@ func (r *GetReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 
 	// Managing CR validation
 	if ok, err := r.isValid(instance); !ok {
-		return r.ManageError(ctx, instance, err)
+		return r.ManageErrorWithRequeue(ctx, instance, err, 2*time.Second)
 	}
 
 	// Managing CR Initialization
@@ -90,25 +91,24 @@ func (r *GetReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 
 	// Managing CR Finalization
 	if util.IsBeingDeleted(instance) {
-		if !util.HasFinalizer(instance, finalizer) {
-			return reconcile.Result{}, nil
-		}
-		err := r.manageCleanUpLogic(instance)
-
-		if err != nil {
-			log.Error(err, "unable to delete instance", "instance", instance)
-			return r.ManageError(ctx, instance, err)
-		}
-		util.RemoveFinalizer(instance, finalizer)
-		err = r.GetClient().Update(context.Background(), instance)
-		if err != nil {
-			log.Error(err, "unable to update instance", "instance", instance)
-			return r.ManageError(ctx, instance, err)
-		}
+		//if !util.HasFinalizer(instance, finalizer) {
+		//	return reconcile.Result{}, nil
+		//}
+		//err := r.manageCleanUpLogic(instance)
+		//
+		//if err != nil {
+		//	log.Error(err, "unable to delete instance", "instance", instance)
+		//	return r.ManageError(ctx, instance, err)
+		//}
+		//util.RemoveFinalizer(instance, finalizer)
+		//err = r.GetClient().Update(context.Background(), instance)
+		//if err != nil {
+		//	log.Error(err, "unable to update instance", "instance", instance)
+		//	return r.ManageError(ctx, instance, err)
+		//}
 		return reconcile.Result{}, nil
 	}
 
-	// Managing MountPoint Logic
 	err = r.manageOperatorLogic(instance, log)
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
@@ -118,26 +118,24 @@ func (r *GetReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 }
 
 func (r *GetReconciler) isInitialized(obj metav1.Object) bool {
-	mountPoint, ok := obj.(*netconfv1.Get)
+	_, ok := obj.(*netconfv1.Get)
 	if !ok {
 		return false
 	}
-	if util.HasFinalizer(mountPoint, finalizer) {
-		return true
-	}
-	util.AddFinalizer(mountPoint, finalizer)
-	return false
+	return true
 
 }
 
 func (r *GetReconciler) isValid(obj metav1.Object) (bool, error) {
 	instance, ok := obj.(*netconfv1.Get)
 	if !ok {
-		return false, errors.New("not an Get object")
+		return false, fmt.Errorf("%s is not a Get object", obj.GetName())
 	}
 
-	exists := CheckMountPointExists(r.ReconcilerBase,
-		types.NamespacedName{Namespace: instance.Namespace, Name: instance.Spec.MountPoint})
+	exists := CheckMountPointExists(
+		r.ReconcilerBase,
+		types.NamespacedName{Namespace: instance.Namespace, Name: instance.Spec.MountPoint},
+	)
 	if !exists {
 		return false, fmt.Errorf("MountPoint %s doesn't exists", instance.Spec.MountPoint)
 	}
@@ -145,28 +143,23 @@ func (r *GetReconciler) isValid(obj metav1.Object) (bool, error) {
 	return true, nil
 }
 
-func (r *GetReconciler) manageCleanUpLogic(Get *netconfv1.Get) error {
-
-	// TODO NOOP
-
-	return nil
-}
-
 func (r *GetReconciler) manageOperatorLogic(get *netconfv1.Get, log logr.Logger) error {
 	log.Info(fmt.Sprintf("%s: Get with filter: %s.", get.Spec.MountPoint, get.Spec.FilterType))
 
-	s := Sessions[types.NamespacedName{Namespace: get.Namespace, Name: get.Spec.MountPoint}.String()]
-	reply, err := s.ExecRPC(message.NewGet(get.Spec.FilterType, get.Spec.XML))
-	if err != nil {
-		log.Error(err, fmt.Sprintf("%s: Failed to Get.", get.Spec.MountPoint))
-		get.Status.Status = "failed"
-		get.Status.RpcReply = reply.RawReply
+	m := message.NewGet(get.Spec.FilterType, get.Spec.FilterXML)
+	s := Sessions[get.GetMountPointNamespacedName(get.Spec.MountPoint)]
+
+	reply, err := s.SyncRPC(m, get.Spec.Timeout)
+	if err != nil || reply.Errors != nil {
+		log.Info(fmt.Sprintf("%s: Failed to Get %s.", get.Spec.MountPoint, get.Name))
+		get.Status = "failed"
+		get.RpcReply = reply.RawReply
 		return err
 	}
-	log.Info(fmt.Sprintf("%s: Successfully executed get operation.", get.Spec.MountPoint))
 
-	get.Status.Status = "success"
-	get.Status.RpcReply = reply.Data
+	log.Info(fmt.Sprintf("%s: Successfully executed get operation %s.", get.Spec.MountPoint, get.Name))
+	get.Status = "success"
+	get.RpcReply = reply.Data
 
 	return nil
 }

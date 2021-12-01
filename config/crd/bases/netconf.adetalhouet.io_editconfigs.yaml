@@ -36,6 +36,10 @@ spec:
           spec:
             description: EditConfigSpec defines the desired state of EditConfig
             properties:
+              commit:
+                default: false
+                description: Whether to commit the changes.
+                type: boolean
               dependsOn:
                 description: If this EditConfig operation should occur after another
                   operation, specify the other operation here.
@@ -49,6 +53,11 @@ spec:
                       within the same namespace
                     type: string
                 type: object
+              lock:
+                default: false
+                description: Whether to lock the specified datastore before doing
+                  the edit-config
+                type: boolean
               mountPoint:
                 description: Defines the NETCONF session to use
                 type: string
@@ -63,6 +72,17 @@ spec:
                 description: Identify the datastore against which the operation should
                   be performed. Default to `candidate`.
                 type: string
+              timeout:
+                default: 1
+                description: Timeout defines the timeout for the NETCONF transaction
+                  defaults to 1 seconds
+                format: int32
+                type: integer
+              unlock:
+                default: false
+                description: Whether to unlock the specified datastore before doing
+                  the edit-config
+                type: boolean
               xml:
                 description: Define the XML payload to sent
                 type: string
@@ -71,8 +91,12 @@ spec:
             - xml
             type: object
           status:
-            description: EditConfigStatus defines the observed state of EditConfig
             properties:
+              capabilities:
+                description: Provide the list of supported capabilities
+                items:
+                  type: string
+                type: array
               conditions:
                 items:
                   description: "Condition contains details for one aspect of the current
@@ -150,6 +174,9 @@ spec:
                 type: string
               status:
                 description: Either `success` or `failed`
+                type: string
+              subscriptionID:
+                description: In case of a notification, keep track of the subscription-id
                 type: string
             type: object
         type: object

@@ -4,7 +4,7 @@ metadata:
   name: csr1kv-mountpoint
   namespace: default
 spec:
-  target: 10.64.1.54:32035
+  target: 10.64.1.54:31912
   username: lab
   password: lab
   timeout: 15

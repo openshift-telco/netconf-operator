@@ -7,9 +7,9 @@ spec:
   mountPoint: csr1kv-mountpoint
   operation: merge
   target: candidate
-  lock: true
-  commit: true
-  unlock: true
+  dependsOn:
+    kind: Lock
+    name: lock-csr1kv
   xml: |-
     <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
       <hostname>test</hostname>
