@@ -19,8 +19,8 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/adetalhouet/go-netconf/netconf"
-	"github.com/adetalhouet/go-netconf/netconf/message"
+	"github.com/openshift-telco/go-netconf-client/netconf"
+	"github.com/openshift-telco/go-netconf-client/netconf/message"
 	"github.com/go-logr/logr"
 	"golang.org/x/crypto/ssh"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -34,7 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	"time"
 
-	netconfv1 "github.com/adetalhouet/netconf-operator/api/v1"
+	netconfv1 "github.com/openshift-telco/netconf-operator/api/v1"
 	"github.com/redhat-cop/operator-utils/pkg/util"
 )
 

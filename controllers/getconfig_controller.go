@@ -20,7 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/adetalhouet/go-netconf/netconf/message"
+	"github.com/openshift-telco/go-netconf-client/netconf/message"
 	"github.com/go-logr/logr"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,7 +36,7 @@ import (
 
 	"github.com/redhat-cop/operator-utils/pkg/util"
 
-	netconfv1 "github.com/adetalhouet/netconf-operator/api/v1"
+	netconfv1 "github.com/openshift-telco/netconf-operator/api/v1"
 )
 
 //+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=getconfigs,verbs=get;list;watch;create;update;patch;delete

@@ -19,7 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/adetalhouet/go-netconf/netconf"
+	"github.com/openshift-telco/go-netconf-client/netconf"
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -36,7 +36,7 @@ import (
 
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	netconfv1 "github.com/adetalhouet/netconf-operator/api/v1"
+	netconfv1 "github.com/openshift-telco/netconf-operator/api/v1"
 )
 
 //+kubebuilder:rbac:groups=netconf.adetalhouet.io,resources=createsubscriptions,verbs=get;list;watch;create;update;patch;delete

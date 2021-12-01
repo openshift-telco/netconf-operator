@@ -31,8 +31,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	netconfv1 "github.com/adetalhouet/netconf-operator/api/v1"
-	"github.com/adetalhouet/netconf-operator/controllers"
+	netconfv1 "github.com/openshift-telco/netconf-operator/api/v1"
+	"github.com/openshift-telco/netconf-operator/controllers"
 	//+kubebuilder:scaffold:imports
 )
 

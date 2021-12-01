@@ -30,7 +30,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	netconfv1 "github.com/adetalhouet/netconf-operator/api/v1"
+	netconfv1 "github.com/openshift-telco/netconf-operator/api/v1"
 	//+kubebuilder:scaffold:imports
 )
 

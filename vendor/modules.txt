@@ -25,10 +25,6 @@ github.com/Masterminds/sprig/v3
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 github.com/PuerkitoBio/urlesc
-# github.com/adetalhouet/go-netconf v1.2.2
-## explicit
-github.com/adetalhouet/go-netconf/netconf
-github.com/adetalhouet/go-netconf/netconf/message
 # github.com/beorn7/perks v1.0.1
 github.com/beorn7/perks/quantile
 # github.com/cespare/xxhash/v2 v2.1.1
@@ -148,6 +144,10 @@ github.com/onsi/gomega/matchers/support/goraph/edge
 github.com/onsi/gomega/matchers/support/goraph/node
 github.com/onsi/gomega/matchers/support/goraph/util
 github.com/onsi/gomega/types
+# github.com/openshift-telco/go-netconf-client v0.0.1
+## explicit
+github.com/openshift-telco/go-netconf-client/netconf
+github.com/openshift-telco/go-netconf-client/netconf/message
 # github.com/pkg/errors v0.9.1
 github.com/pkg/errors
 # github.com/prometheus/client_golang v1.7.1
