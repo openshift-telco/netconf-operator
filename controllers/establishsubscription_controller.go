@@ -199,11 +199,14 @@ func (r *EstablishSubscriptionReconciler) manageOperatorLogic(
 	if err != nil || reply.Errors != nil {
 		log.Info(
 			fmt.Sprintf(
-				"%s: Failed to Establish NETCONF Subscription %s.", obj.Spec.MountPoint, obj.Name,
+				"%s: Failed to Establish NETCONF Subscription %s with error %d.", obj.Spec.MountPoint, obj.Name, err,
 			),
 		)
 		obj.Status = "failed"
-		obj.RpcReply = reply.RawReply
+		if reply != nil {
+			obj.RpcReply = reply.RawReply
+		}
+		return err
 	}
 
 	log.Info(
@@ -212,14 +215,22 @@ func (r *EstablishSubscriptionReconciler) manageOperatorLogic(
 			obj.Spec.MountPoint, obj.GetNamespacedName(),
 		),
 	)
+
 	// Define callback for EstablishSubscription
 	notificationCallback := func(event netconf.Event) {
 		notification := event.Notification()
-		// sends a K8S event
-		r.recorder.Eventf(
-			obj, "Normal", fmt.Sprintf("NetconfNotification-%s", identifier),
-			fmt.Sprintf("%s", notification.RawReply),
-		)
+		if obj.Spec.KafkaSink.Enabled {
+			err := SendToKafka(notification.RawReply, obj.Spec.KafkaSink)
+			if err != nil {
+				return
+			}
+		} else {
+			// sends a K8S event
+			r.recorder.Eventf(
+				obj, "Normal", "NewEstablishSubscriptionNotification",
+				fmt.Sprintf("%s", notification.RawReply),
+			)
+		}
 	}
 
 	// Register a new listener for upcoming NETCONF notifications for

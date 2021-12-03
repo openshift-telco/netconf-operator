@@ -37,7 +37,6 @@ spec:
             description: GetSpec defines the desired state of Get
             properties:
               filterType:
-                default: subtree
                 description: Define the filter to apply; see more https://datatracker.ietf.org/doc/html/rfc6241#page-20
                 type: string
               filterXML:

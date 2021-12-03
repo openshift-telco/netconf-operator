@@ -37,6 +37,26 @@ spec:
           spec:
             description: EstablishSubscriptionSpec defines the desired state of EstablishSubscription
             properties:
+              kafkaSink:
+                description: Used to forward received notification to kafka
+                properties:
+                  broker:
+                    type: string
+                  enabled:
+                    type: boolean
+                  partition:
+                    type: integer
+                  topic:
+                    type: string
+                  transportType:
+                    type: string
+                required:
+                - broker
+                - enabled
+                - partition
+                - topic
+                - transportType
+                type: object
               mountPoint:
                 description: Defines the NETCONF session to use
                 type: string

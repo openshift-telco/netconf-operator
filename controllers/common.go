@@ -7,9 +7,12 @@ import (
 	"github.com/openshift-telco/go-netconf-client/netconf"
 	netconfv1 "github.com/openshift-telco/netconf-operator/api/v1"
 	"github.com/redhat-cop/operator-utils/pkg/util"
+	"github.com/segmentio/kafka-go"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+	"log"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"time"
 )
 
 const mountPointControllerName = "mountpoint"
@@ -53,6 +56,32 @@ func ValidateXML(data string, dataStruct interface{}) error {
 	err := xml.Unmarshal([]byte(data), &dataStruct)
 	if err != nil {
 		return fmt.Errorf("provided XML is not valid: %s. \n%s", data, err)
+	}
+	return nil
+}
+
+// SendToKafka establish a connection and sends a message to Kafka
+func SendToKafka(message string, kafkaSync netconfv1.KafkaSink) error {
+	conn, err := kafka.DialLeader(
+		context.Background(), kafkaSync.TransportType, kafkaSync.Broker, kafkaSync.Topic, kafkaSync.Partition,
+	)
+	if err != nil {
+		log.Fatal("failed to dial leader:", err)
+	}
+
+	err = conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+	if err != nil {
+		return fmt.Errorf("timeout writing message %w", err)
+	}
+	_, err = conn.WriteMessages(
+		kafka.Message{Value: []byte(message)},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to write messages %w", err)
+	}
+
+	if err := conn.Close(); err != nil {
+		return fmt.Errorf("failed to close writer %w", err)
 	}
 	return nil
 }

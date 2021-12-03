@@ -18,6 +18,14 @@ func (d *DependsOn) IsNil() bool {
 	return len(d.Kind) == 0 || len(d.Name) == 0
 }
 
+type KafkaSink struct {
+	Enabled       bool   `json:"enabled"`
+	Topic         string `json:"topic"`
+	TransportType string `json:"transportType"`
+	Broker        string `json:"broker"`
+	Partition     int    `json:"partition"`
+}
+
 type RPCStatus struct {
 	// +patchMergeKey=type
 	// +patchStrategy=merge

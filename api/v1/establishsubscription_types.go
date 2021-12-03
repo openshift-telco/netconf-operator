@@ -31,6 +31,8 @@ type EstablishSubscriptionSpec struct {
 	Timeout int32 `json:"timeout,omitempty"`
 	// Defines the `<establish-subscription` RPC to sent
 	XML string `json:"xml"`
+	// Used to forward received notification to kafka
+	KafkaSink KafkaSink `json:"kafkaSink,omitempty"`
 }
 
 //+kubebuilder:object:root=true

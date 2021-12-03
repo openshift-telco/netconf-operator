@@ -5,6 +5,12 @@ metadata:
   namespace: default
 spec:
   mountPoint: csr1kv-mountpoint
+  kafkaSink:
+    enabled: True
+    topic: netconf-notification
+    partition: 0
+    transportType: tcp
+    broker: my-cluster-kafka-brokers.default.svc.cluster.local:9092
   xml: |-
     <establish-subscription
         xmlns="urn:ietf:params:xml:ns:yang:ietf-event-notifications"

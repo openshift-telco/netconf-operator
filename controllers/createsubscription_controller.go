@@ -131,16 +131,21 @@ func (r *CreateSubscriptionReconciler) isValid(obj metav1.Object) (bool, error) 
 }
 
 func (r *CreateSubscriptionReconciler) manageOperatorLogic(obj *netconfv1.CreateSubscription, log logr.Logger) error {
-	identifier := obj.GetNamespacedName()
-
 	log.Info(fmt.Sprintf("%s: Create NETCONF subscription %s.", obj.Spec.MountPoint, obj.Name))
 
 	callback := func(event netconf.Event) {
 		notification := event.Notification()
-		// sends a K8S event
-		r.recorder.Eventf(
-			obj, "Normal", fmt.Sprintf("NetconfNotification-%s", identifier), fmt.Sprintf("%s", notification.RawReply),
-		)
+		if obj.Spec.KafkaSink.Enabled {
+			err := SendToKafka(notification.RawReply, obj.Spec.KafkaSink)
+			if err != nil {
+				return
+			}
+		} else {
+			// sends a K8S event
+			r.recorder.Eventf(
+				obj, "Normal", "NewCreateSubscriptionNotification", fmt.Sprintf("%s", notification.RawReply),
+			)
+		}
 	}
 
 	s := Sessions[obj.GetMountPointNamespacedName(obj.Spec.MountPoint)]

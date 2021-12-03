@@ -61,8 +61,20 @@ it is depending on, using the `dependsOn` field. As such, one can achieve such f
 
 ### NETCONF notifications usage
 
-By registering to a notification stream, the operator received the `notification` and translate it to a Kubernetes
-event. This enables the consumption of the events by downstream systems for further processing.
+By registering to a notification stream, the operator received the `notification` and translate it
+
+- by default to a Kubernetes event
+- or to a kafka message using the kafka sink configuration
+   ~~~
+   kafkaSink:
+     enabled: True
+     topic: netconf-notification
+     partition: 0
+     transportType: tcp
+     broker: my-cluster-kafka-brokers.default.svc.cluster.local:9092
+    ~~~
+
+This enables the consumption of the events by downstream systems for further processing.
 
 ![](https://raw.githubusercontent.com/openshift-telco/netconf-operator/main/docs/netconf-notification-example.png)
 

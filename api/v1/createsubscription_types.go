@@ -35,6 +35,8 @@ type CreateSubscriptionSpec struct {
 	StartTime string `json:"startTime,omitempty"`
 	// Defines the time when to stop listen to changes.
 	StopTime string `json:"stopTime,omitempty"`
+	// Used to forward received notification to kafka
+	KafkaSink KafkaSink `json:"kafkaSink,omitempty"`
 }
 
 //+kubebuilder:object:root=true
