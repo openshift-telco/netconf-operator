@@ -179,21 +179,6 @@ func (r *EstablishSubscriptionReconciler) manageOperatorLogic(
 	log.Info(fmt.Sprintf("%s: Establish NETCONF subscription %s.", obj.Spec.MountPoint, obj.Name))
 
 	s := Sessions[obj.GetMountPointNamespacedName(obj.Spec.MountPoint)]
-
-	identifier := obj.GetNamespacedName()
-
-	// In case of update to the CR, check if the identified EstablishSubscription exists already.
-	// If so, do not proceed with new registration, skip instead.
-	if obj.SubscriptionID != "" {
-		log.Info(
-			fmt.Sprintf(
-				"%s: Skip EstablishSubscription for %s as it already exists with subscriptionID %s",
-				obj.Spec.MountPoint, identifier, obj.SubscriptionID,
-			),
-		)
-		return nil
-	}
-
 	reply, err := s.SyncRPC(message.NewEstablishSubscription(obj.Spec.XML), obj.Spec.Timeout)
 
 	if err != nil || reply.Errors != nil {
