@@ -33,6 +33,10 @@ This operator provides support for:
 
 The operator is built using the following [go-netconf](https://github.com/openshift-telco/go-netconf-client) client.
 
+### CRD documentation
+
+[v0.0.1](https://doc.crds.dev/github.com/openshift-telco/netconf-operator@v.0.0.1)
+
 ## RPC Usage
 
 The `MountPoint` CRD is meant to establish an SSH connection to a remote NETCONF server.
