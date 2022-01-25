@@ -1,0 +1,10 @@
+resources:
+- commit.yaml
+- edit-config.yaml
+- get-config.yaml
+- lock.yaml
+- mountpoint.yaml
+- rpc.yaml
+- unlock.yaml
+- notifications/create-subscription.yaml
+- notifications/establish-subscriptions.yaml

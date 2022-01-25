@@ -1,0 +1,8 @@
+apiVersion: netconf.openshift-telco.io/v1
+kind: GetConfig
+metadata:
+  name: get-config
+  namespace: default
+spec:
+  mountPoint: csr1kv-mountpoint
+  source: running

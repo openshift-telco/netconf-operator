@@ -1,0 +1,8 @@
+apiVersion: netconf.openshift-telco.io/v1
+kind: Lock
+metadata:
+  name: lock-csr1kv
+  namespace: default
+spec:
+  mountPoint: csr1kv-mountpoint
+  target: candidate

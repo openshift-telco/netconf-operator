@@ -1,0 +1,21 @@
+apiVersion: netconf.openshift-telco.io/v1
+kind: EstablishSubscription
+metadata:
+  name: netconf-notifications
+  namespace: default
+spec:
+  mountPoint: csr1kv-mountpoint
+  kafkaSink:
+    enabled: True
+    topic: netconf-notification
+    partition: 0
+    transportType: tcp
+    broker: my-cluster-kafka-brokers.default.svc.cluster.local:9092
+  xml: |-
+    <establish-subscription
+        xmlns="urn:ietf:params:xml:ns:yang:ietf-event-notifications"
+        xmlns:yp="urn:ietf:params:xml:ns:yang:ietf-yang-push">
+      <stream>yp:yang-push</stream>
+      <yp:xpath-filter>/mdt-oper:mdt-oper-data/mdt-subscriptions</yp:xpath-filter>
+      <yp:period>1000</yp:period>
+    </establish-subscription>

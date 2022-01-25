@@ -1,0 +1,16 @@
+apiVersion: netconf.openshift-telco.io/v1
+kind: EditConfig
+metadata:
+  name: edit-config-change-hostname
+  namespace: default
+spec:
+  mountPoint: csr1kv-mountpoint
+  operation: merge
+  target: candidate
+  lock: true
+  commit: true
+  unlock: true
+  xml: |-
+    <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
+      <hostname>r1</hostname>
+    </native>

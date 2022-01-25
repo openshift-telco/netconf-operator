@@ -74,7 +74,7 @@ func main() {
 			Port:                       9443,
 			HealthProbeBindAddress:     probeAddr,
 			LeaderElection:             enableLeaderElection,
-			LeaderElectionID:           "6c6d728d.adetalhouet.io",
+			LeaderElectionID:           "6c6d728d.openshift-telco.io",
 			LeaderElectionResourceLock: "configmaps",
 		},
 	)

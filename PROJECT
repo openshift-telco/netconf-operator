@@ -1,4 +1,4 @@
-domain: adetalhouet.io
+domain: openshift-telco
 layout:
 - go.kubebuilder.io/v3
 plugins:
@@ -12,7 +12,7 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: adetalhouet.io
+  domain: openshift-telco
   group: netconf
   kind: Mountpoint
   path: github.com/openshift-telco/netconf-operator/api/v1
@@ -21,7 +21,7 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: adetalhouet.io
+  domain: openshift-telco
   group: netconf
   kind: Commit
   path: github.com/openshift-telco/netconf-operator/api/v1
@@ -30,7 +30,7 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: adetalhouet.io
+  domain: openshift-telco
   group: netconf
   kind: EditConfig
   path: github.com/openshift-telco/netconf-operator/api/v1
@@ -39,7 +39,7 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: adetalhouet.io
+  domain: openshift-telco
   group: netconf
   kind: GetConfig
   path: github.com/openshift-telco/netconf-operator/api/v1
@@ -48,7 +48,7 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: adetalhouet.io
+  domain: openshift-telco
   group: netconf
   kind: Get
   path: github.com/openshift-telco/netconf-operator/api/v1
@@ -57,7 +57,7 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: adetalhouet.io
+  domain: openshift-telco
   group: netconf
   kind: Lock
   path: github.com/openshift-telco/netconf-operator/api/v1
@@ -66,7 +66,7 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: adetalhouet.io
+  domain: openshift-telco
   group: netconf
   kind: Unlock
   path: github.com/openshift-telco/netconf-operator/api/v1
@@ -75,7 +75,7 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: adetalhouet.io
+  domain: openshift-telco
   group: netconf
   kind: RPC
   path: github.com/openshift-telco/netconf-operator/api/v1
@@ -84,7 +84,7 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: adetalhouet.io
+  domain: openshift-telco
   group: netconf
   kind: EstablishSubscription
   path: github.com/openshift-telco/netconf-operator/api/v1
@@ -93,7 +93,7 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: adetalhouet.io
+  domain: openshift-telco
   group: netconf
   kind: CreateSubscription
   path: github.com/openshift-telco/netconf-operator/api/v1
@@ -102,7 +102,7 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: adetalhouet.io
+  domain: openshift-telco
   group: netconf
   kind: Notification
   path: github.com/openshift-telco/netconf-operator/api/v1

@@ -1,0 +1,11 @@
+apiVersion: netconf.openshift-telco.io/v1
+kind: Get
+metadata:
+  name: get
+  namespace: default
+spec:
+  mountPoint: csr1kv-mountpoint
+  filterType: subtree
+  filterXML: |-
+    <routing xmlns="urn:ietf:params:xml:ns:yang:ietf-routing">
+    </routing>

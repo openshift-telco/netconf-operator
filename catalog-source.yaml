@@ -1,0 +1,13 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: netconf-operator
+  namespace: openshift-marketplace
+spec:
+  sourceType: grpc
+  image: quay.io/adetalho/netconf-operator-index:0.0.1
+  displayName: NETCONF Operator
+  publisher: Alexis de Talhouët
+  updateStrategy:
+    registryPoll:
+      interval: 60m

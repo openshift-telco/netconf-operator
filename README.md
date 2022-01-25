@@ -97,6 +97,23 @@ defined for that subscription.
 
 ## Usage
 
+### Deployment
+To deploy the operator, add the Catalog Source
+
+~~~
+oc create -f catalog-source.yaml
+~~~
+
+Then search for the "NETCONF Operator" in your OpenShift's Operator Hub
+
+![](https://raw.githubusercontent.com/openshift-telco/netconf-operator/main/docs/operator-hub.png)
+
+Once installed, you should be able to use its CRDs
+
+![](https://raw.githubusercontent.com/openshift-telco/netconf-operator/main/docs/netconf-operator.png)
+
+### Development
+
 ~~~
 make deploy IMG=quay.io/adetalho/netconf-operator:dev
 ~~~
@@ -118,7 +135,7 @@ make undeploy
 1 - create the scaffolding
 
 ~~~
-operator-sdk init --domain=adetalhouet.io --repo=github.com/openshift-telco/netconf-operator
+operator-sdk init --domain=openshift-telco.io --repo=github.com/openshift-telco/netconf-operator
 ~~~
 
 2. generate the netconf operations API.
@@ -135,6 +152,22 @@ operator-sdk create api --resource=true --controller=true --group netconf --vers
 operator-sdk create api --resource=true --controller=true --group netconf --version v1 --kind RPC
 operator-sdk create api --resource=true --controller=true --group netconf --version v1 --kind CreateSubscription
 operator-sdk create api --resource=true --controller=true --group netconf --version v1 --kind EstablishSubscription
+~~~
+
+3. Build bundle
+
+~~~
+make bundle
+make bundle-build IMG=quay.io/adetalho/netconf-operator:0.0.1 BUNDLE_IMG=quay.io/adetalho/netconf-operator-bundle:0.0.1
+~~~
+
+4. Create index
+
+~~~
+opm index add \
+    --bundles quay.io/adetalho/netconf-operator-bundle:0.0.1 \
+    --tag quay.io/adetalho/netconf-operator-index:0.0.1
+podman push quay.io/adetalho/netconf-operator-index:0.0.1
 ~~~
 
 ### Links

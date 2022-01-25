@@ -1,0 +1,46 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+  name: netconf-operator.v0.0.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions: {}
+  description: Kubernetes Operator supporting NETCONF RPCs and Notifications.
+  displayName: NETCONF Operator
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      deployments: null
+    strategy: ""
+  installModes:
+  - supported: false
+    type: OwnNamespace
+  - supported: false
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - network
+  - provisioning
+  - netconf
+  - rpc
+  - service assurance
+  links:
+  - name: Netconf Operator
+    url: https://netconf-operator.domain
+  maintainers:
+  - email: adetalhouet89@gmail.com
+    name: Alexis de Talhouët
+  maturity: alpha
+  provider:
+    name: Alexis de Talhouët
+    url: https://github.com/adetalhouet
+  version: 0.0.0
