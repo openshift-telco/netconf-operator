@@ -165,7 +165,7 @@ func (r *MountPointReconciler) manageOperatorLogic(obj *netconfv1.MountPoint, lo
 
 	sshConfig := &ssh.ClientConfig{
 		User:            obj.Spec.Username,
-		Auth:            []ssh.AuthMethod{ssh.Password(obj.Spec.Username)},
+		Auth:            []ssh.AuthMethod{ssh.Password(obj.Spec.Password)},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
